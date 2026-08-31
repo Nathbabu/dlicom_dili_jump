@@ -11,6 +11,11 @@ const UPSTASH_REDIS_REST_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN || 'gQAAAA
 
 app.use(cors());
 app.use(express.json());
+
+// Explicit Static Asset Handlers
+app.use('/css', express.static(path.join(__dirname, 'css')));
+app.use('/js', express.static(path.join(__dirname, 'js')));
+app.use('/assets', express.static(path.join(__dirname, 'assets')));
 app.use(express.static(path.join(__dirname)));
 
 // In-memory fallback cache
@@ -111,12 +116,24 @@ app.post('/api/score/submit', async (req, res) => {
   }
 });
 
-// Serve Main Game Page
-app.get('*', (req, res) => {
+// Serve Main Game Page for all other HTML navigations
+app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 [DILI JUMP ARCADE SERVER] Running at http://localhost:${PORT}`);
-  getLeaderboardFromRedis();
+// Fallback only if no static file matched and not an API call
+app.use((req, res, next) => {
+  if (req.method === 'GET' && !req.path.startsWith('/api') && !req.path.includes('.')) {
+    return res.sendFile(path.join(__dirname, 'index.html'));
+  }
+  next();
 });
+
+if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`🚀 [DILI JUMP ARCADE SERVER] Running at http://localhost:${PORT}`);
+    getLeaderboardFromRedis();
+  });
+}
+
+module.exports = app;
