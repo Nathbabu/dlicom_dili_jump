@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>DILI JUMP // Dlicom Arcade</title>
-  <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
+  <link rel="icon" type="image/png" href="/assets/characters/dili-jump-cutout-mint.png">
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -40,9 +40,12 @@
       
       <!-- Top Brand Header with Quick Action Buttons -->
       <div class="brand-header">
-        <div>
-          <div class="brand-title">DILI JUMP</div>
-          <div class="brand-badge">DLICOM ARCADE</div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <img src="/assets/characters/dili-jump-cutout-mint.png" alt="Dili" style="width:38px;height:38px;object-fit:contain;filter:drop-shadow(0 0 10px rgba(0,255,194,0.6));" />
+          <div>
+            <div class="brand-title">DILI JUMP</div>
+            <div class="brand-badge">DLICOM ARCADE</div>
+          </div>
         </div>
         <div style="display:flex;gap:8px;align-items:center;">
           <button id="btn-quick-leaderboard" class="btn-icon" title="Leaderboard">🏆</button>
@@ -102,7 +105,12 @@
     <div id="game-over-screen" class="overlay-screen hidden">
       
       <div class="brand-header">
-        <div class="brand-title" style="color:#ef4444;">MISSION CONCLUDED</div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <img src="/assets/characters/dili-fall-cutout-mint.png" alt="Dili" style="width:34px;height:34px;object-fit:contain;filter:drop-shadow(0 0 8px rgba(239,68,68,0.5));" />
+          <div>
+            <div class="brand-title" style="color:#ef4444;">MISSION CONCLUDED</div>
+          </div>
+        </div>
         <div id="final-rank-badge" class="brand-badge" style="color:#facc15;border-color:#facc15;">GLOBAL RANK #--</div>
       </div>
 

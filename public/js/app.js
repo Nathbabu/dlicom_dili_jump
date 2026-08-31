@@ -180,7 +180,7 @@
     SoundEngine.click();
     const finalScore = document.getElementById('final-altitude-val')?.textContent || '0 PTS';
     const tweetText = `Scored ${finalScore} in DILI JUMP with @DlicomApp! 🚀🐰\n\nPilot: ${pilotName}\n\nCan you beat my score on the global leaderboard?\n\n#Dlicom #DiliJump #Web3Gaming`;
-    const intentUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}&url=${encodeURIComponent(window.location.origin)}`;
+    const intentUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}&url=${encodeURIComponent('https://dilijumpdlicom.vercel.app')}`;
     window.open(intentUrl, '_blank');
   });
 
