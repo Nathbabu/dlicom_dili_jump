@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>DILI JUMP // Dlicom Arcade</title>
+  <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=JetBrains+Mono:wght@400;600;700;800&family=Space+Grotesk:wght@500;700;900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="/css/game.css">
+</head>
+<body>
+
+  <!-- Main Game Frame -->
+  <main class="game-container">
+
+    <!-- Active 60fps Canvas -->
+    <canvas id="game-canvas" width="460" height="700"></canvas>
+
+    <!-- In-Game HUD -->
+    <div id="game-hud" class="game-hud hidden">
+      <div class="hud-tag">
+        <div style="font-size:10px;color:#94a3b8;letter-spacing:1px;">SCORE</div>
+        <div id="hud-altitude-val" class="hud-altitude">0 PTS</div>
+      </div>
+      <div class="hud-tag" style="text-align:right;">
+        <div id="hud-score-val" style="font-size:14px;color:#fff;font-weight:700;">0</div>
+        <div id="hud-combo-val" class="hud-combo" style="display:none;">x1 COMBO</div>
+      </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- 1. START MENU OVERLAY -->
+    <!-- ===================================================================== -->
+    <div id="start-screen" class="overlay-screen">
+      
+      <!-- Top Brand Header with Quick Action Buttons -->
+      <div class="brand-header">
+        <div>
+          <div class="brand-title">DILI JUMP</div>
+          <div class="brand-badge">DLICOM ARCADE</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <button id="btn-quick-leaderboard" class="btn-icon" title="Leaderboard">🏆</button>
+          <button id="btn-toggle-audio" class="btn-icon" title="Toggle Sound">🔊</button>
+        </div>
+      </div>
+
+      <!-- Center Mascot & Color Customizer -->
+      <div class="mascot-preview-box">
+        <div class="mascot-avatar-container">
+          <img id="mascot-avatar-preview" src="/assets/characters/dili-jump-cutout-mint.png" alt="Dili Mascot" class="mascot-avatar-img" />
+        </div>
+        
+        <div class="color-picker-label">CHOOSE SUIT COLOR</div>
+        <div class="color-chips-grid">
+          <button class="color-chip active" data-suit="mint" style="background:#00ffc2;" title="Neon Mint"></button>
+          <button class="color-chip" data-suit="pink" style="background:#ec49c0;" title="Cyber Pink"></button>
+          <button class="color-chip" data-suit="lime" style="background:#d2e823;" title="Acid Lime"></button>
+          <button class="color-chip" data-suit="cyan" style="background:#00f3ff;" title="Sky Cyan"></button>
+          <button class="color-chip" data-suit="purple" style="background:#a855f7;" title="Void Purple"></button>
+          <button class="color-chip" data-suit="crimson" style="background:#ef4444;" title="Crimson"></button>
+          <button class="color-chip" data-suit="gold" style="background:#facc15;" title="Sovereign Gold"></button>
+          <button class="color-chip" data-suit="blue" style="background:#38bdf8;" title="Cobalt"></button>
+        </div>
+      </div>
+
+      <!-- Pilot Input & Actions -->
+      <div style="width:100%;display:flex;flex-direction:column;gap:10px;">
+        <div class="custom-input-box">
+          <input 
+            type="text" 
+            id="pilot-name-input" 
+            placeholder="ENTER DILI NICKNAME / @X_HANDLE" 
+            class="cyber-input"
+            maxlength="20"
+          />
+        </div>
+
+        <button id="btn-launch-game" class="btn-primary">
+          <span>🚀 LAUNCH JUMP</span>
+        </button>
+
+        <button id="btn-open-leaderboard" class="btn-secondary">
+          <span>🏆 GLOBAL LEADERBOARD</span>
+        </button>
+
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#64748b;text-align:center;margin-top:4px;">
+          Controls: A/D or Arrow Keys to move · Tap Buttons on Mobile
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- 2. GAME OVER OVERLAY (WITH HOME SCREEN & LEADERBOARD BUTTONS) -->
+    <!-- ===================================================================== -->
+    <div id="game-over-screen" class="overlay-screen hidden">
+      
+      <div class="brand-header">
+        <div class="brand-title" style="color:#ef4444;">MISSION CONCLUDED</div>
+        <div id="final-rank-badge" class="brand-badge" style="color:#facc15;border-color:#facc15;">GLOBAL RANK #--</div>
+      </div>
+
+      <div style="background:rgba(15,23,42,0.6);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:16px;margin:14px 0;text-align:center;">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#94a3b8;">FINAL SCORE</div>
+        <div id="final-altitude-val" style="font-size:36px;font-weight:900;color:var(--accent-color);text-shadow:0 0 20px var(--accent-glow);">0 PTS</div>
+
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px;border-top:1px solid rgba(255,255,255,0.08);padding-top:12px;font-family:'JetBrains Mono',monospace;">
+          <div>
+            <div style="font-size:10px;color:#64748b;">SCORE</div>
+            <div id="final-score-val" style="font-weight:800;color:#fff;">0</div>
+          </div>
+          <div>
+            <div style="font-size:10px;color:#64748b;">MAX COMBO</div>
+            <div id="final-combo-val" style="font-weight:800;color:#facc15;">x1</div>
+          </div>
+          <div>
+            <div style="font-size:10px;color:#64748b;">CRYSTALS</div>
+            <div id="final-crystals-val" style="font-weight:800;color:#a855f7;">0</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:10px;width:100%;">
+        <button id="btn-play-again" class="btn-primary">
+          <span>🔄 JUMP AGAIN</span>
+        </button>
+
+        <button id="btn-return-home" class="btn-secondary" style="border-color:var(--accent-color);color:#fff;">
+          <span>🏠 MAIN MENU / CHANGE SUIT</span>
+        </button>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <button id="btn-gameover-leaderboard" class="btn-secondary" style="font-size:11px;">
+            <span>🏆 LEADERBOARD</span>
+          </button>
+          <button id="btn-share-x" class="btn-secondary" style="background:#000;border-color:rgba(255,255,255,0.3);color:#fff;font-size:11px;">
+            <span>𝕏 SHARE ON 𝕏</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- 3. LEADERBOARD MODAL -->
+    <!-- ===================================================================== -->
+    <div id="leaderboard-modal" class="overlay-screen hidden" style="z-index:70;">
+      
+      <div class="brand-header">
+        <div class="brand-title">WALL OF FAME</div>
+        <button id="btn-close-leaderboard" style="background:none;border:none;color:#fff;font-size:22px;cursor:pointer;padding:4px 8px;">✕</button>
+      </div>
+
+      <div style="flex:1;overflow-y:auto;margin:15px 0;border:1px solid rgba(255,255,255,0.08);border-radius:8px;background:rgba(10,12,18,0.7);-webkit-overflow-scrolling:touch;">
+        <table class="leaderboard-table">
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Dili</th>
+              <th>Score</th>
+              <th>Crystals</th>
+            </tr>
+          </thead>
+          <tbody id="leaderboard-rows">
+            <!-- Dynamic entries -->
+          </tbody>
+        </table>
+      </div>
+
+      <button id="btn-close-leaderboard-foot" class="btn-secondary">
+        BACK TO GAME
+      </button>
+
+    </div>
+
+    <!-- On-Screen Left & Right Touch/Click Buttons -->
+    <div id="on-screen-controls" class="on-screen-controls">
+      <button id="btn-touch-left" class="touch-btn">◀ LEFT</button>
+      <button id="btn-touch-right" class="touch-btn">RIGHT ▶</button>
+    </div>
+  
+  </main>
+
+  <!-- Scripts -->
+  <script src="/js/audio.js"></script>
+  <script src="/js/particles.js"></script>
+  <script src="/js/mascot-animator.js"></script>
+  <script src="/js/game-engine.js"></script>
+  <script src="/js/app.js"></script>
+
+</body>
+</html>

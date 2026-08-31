@@ -1,15 +1,13 @@
 {
   "version": 2,
-  "builds": [
+  "rewrites": [
     {
-      "src": "server.js",
-      "use": "@vercel/node"
-    }
-  ],
-  "routes": [
+      "source": "/api/leaderboard",
+      "destination": "/api/leaderboard.js"
+    },
     {
-      "src": "/(.*)",
-      "dest": "/server.js"
+      "source": "/api/score/submit",
+      "destination": "/api/score/submit.js"
     }
   ]
 }
