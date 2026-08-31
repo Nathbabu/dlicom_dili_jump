@@ -78,7 +78,7 @@
       document.documentElement.style.setProperty('--accent-glow', suitConfig.color + '66');
 
       if (mascotAvatarImg) {
-        mascotAvatarImg.src = `assets/characters/dili-jump-cutout-${selectedSuit}.png`;
+        mascotAvatarImg.src = `/assets/characters/dili-jump-cutout-${selectedSuit}.png`;
       }
     });
   });

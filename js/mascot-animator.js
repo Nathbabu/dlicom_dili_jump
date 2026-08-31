@@ -35,7 +35,7 @@ class MascotAnimator {
       this.poses[suit] = {};
       poseTypes.forEach(type => {
         const img = new Image();
-        img.src = `assets/characters/dili-${type}-cutout-${suit}.png`;
+        img.src = `/assets/characters/dili-${type}-cutout-${suit}.png`;
         this.poses[suit][type] = img;
       });
     });
