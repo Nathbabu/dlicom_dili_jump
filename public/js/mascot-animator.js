@@ -1,5 +1,5 @@
 // ==========================================================================
-// DILI JUMP - FAST ACTION SPRITE ANIMATOR (NO GPU BOTTLENECKS)
+// DILI JUMP - BULLETPROOF ACTION SPRITE ANIMATOR (NEVER DISAPPEARS)
 // ==========================================================================
 
 const DILI_SUIT_PRESETS = {
@@ -52,45 +52,54 @@ class MascotAnimator {
   }
 
   triggerBounceSquash() {
-    this.squashX = 1.22;
-    this.squashY = 0.80;
+    this.squashX = 1.20;
+    this.squashY = 0.82;
     this.currentPose = 'jump';
   }
 
   triggerSpringStretch() {
     this.squashX = 0.85;
-    this.squashY = 1.22;
+    this.squashY = 1.20;
     this.currentPose = 'jump';
   }
 
   update(vx, vy, isRocket = false) {
     if (isRocket) {
       this.currentPose = 'rocket';
-    } else if (vy < -1.5) {
+    } else if (vy < -1.0) {
       this.currentPose = 'jump';
-    } else if (vy > 1.5) {
+    } else if (vy > 1.0) {
       this.currentPose = 'fall';
     } else {
       this.currentPose = 'jump';
     }
 
-    this.squashX += (1 - this.squashX) * 0.2;
-    this.squashY += (1 - this.squashY) * 0.2;
+    this.squashX += (1 - this.squashX) * 0.22;
+    this.squashY += (1 - this.squashY) * 0.22;
 
     if (vx < -0.3) {
       this.facingLeft = true;
-      this.tiltAngle += (-0.20 - this.tiltAngle) * 0.25;
+      this.tiltAngle += (-0.18 - this.tiltAngle) * 0.25;
     } else if (vx > 0.3) {
       this.facingLeft = false;
-      this.tiltAngle += (0.20 - this.tiltAngle) * 0.25;
+      this.tiltAngle += (0.18 - this.tiltAngle) * 0.25;
     } else {
       this.tiltAngle += (0 - this.tiltAngle) * 0.25;
     }
   }
 
   draw(ctx, x, y, width = 62, height = 70) {
-    const suitPoses = this.poses[this.activeSuit] || this.poses.mint;
-    const img = (suitPoses && suitPoses[this.currentPose]) || (suitPoses && suitPoses.jump);
+    const suitPoses = this.poses[this.activeSuit] || this.poses.mint || {};
+    
+    // Cascading Image Fallbacks so character NEVER disappears
+    let img = suitPoses[this.currentPose];
+    if (!img || !img.complete || img.naturalWidth === 0) {
+      img = suitPoses.jump;
+    }
+    if (!img || !img.complete || img.naturalWidth === 0) {
+      const mintPoses = this.poses.mint || {};
+      img = mintPoses[this.currentPose] || mintPoses.jump;
+    }
 
     ctx.save();
     ctx.translate(x + width / 2, y + height / 2);
@@ -104,6 +113,16 @@ class MascotAnimator {
 
     if (img && img.complete && img.naturalWidth > 0) {
       ctx.drawImage(img, -width / 2, -height / 2, width, height);
+    } else {
+      // Emergency Neon Vector Dili Mascot (Guaranteed 100% visible always)
+      const config = this.getSuitConfig();
+      ctx.fillStyle = config.color;
+      ctx.beginPath();
+      ctx.ellipse(0, 0, width / 2.2, height / 2.2, 0, 0, Math.PI * 2);
+      ctx.fill();
+      // Ears
+      ctx.fillRect(-15, -height / 1.8, 8, 16);
+      ctx.fillRect(7, -height / 1.8, 8, 16);
     }
 
     ctx.restore();

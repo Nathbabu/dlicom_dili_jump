@@ -1,6 +1,6 @@
 // ==========================================================================
-// DILI JUMP - ULTRA-PERFORMANCE 60 FPS DELTA-TIME ENGINE
-// Mathematically identical speed on Mobile (60Hz), PC (144Hz), and Tablets!
+// DILI JUMP - ULTRA-SNAPPY 60 FPS ARCADE ENGINE
+// Fast physics, high-speed jumps, instant responsiveness!
 // ==========================================================================
 
 class DiliGameEngine {
@@ -19,7 +19,7 @@ class DiliGameEngine {
     // Detect mobile touch
     this.isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) || window.innerWidth < 768;
 
-    // Player State
+    // Snappy Player Physics
     this.player = {
       x: this.width / 2 - 30,
       y: this.height - 180,
@@ -27,8 +27,8 @@ class DiliGameEngine {
       height: 64,
       vx: 0,
       vy: 0,
-      speed: this.isMobile ? 6.5 : 5.6, // Snappy mobile response
-      jumpForce: -13.2
+      speed: 6.4,          // Fast, sharp horizontal control
+      jumpForce: -10.8     // Snappy, energetic jump
     };
 
     // World & Scoring
@@ -123,13 +123,13 @@ class DiliGameEngine {
     let currentY = this.height - 140;
     while (currentY > -1000) {
       this.spawnPlatform(currentY);
-      currentY -= Math.floor(Math.random() * 30 + 55);
+      currentY -= Math.floor(Math.random() * 26 + 48);
     }
   }
 
   spawnPlatform(y) {
     let padWidth = 85;
-    let movingChance = 0.12;
+    let movingChance = 0.14;
     let glassChance = 0.15;
 
     if (this.score > 100) { padWidth = 78; movingChance = 0.25; glassChance = 0.22; }
@@ -149,7 +149,7 @@ class DiliGameEngine {
       width: padWidth,
       height: 14,
       type: type,
-      vx: type === 'moving' ? (Math.random() > 0.5 ? 2.0 : -2.0) : 0,
+      vx: type === 'moving' ? (Math.random() > 0.5 ? 2.4 : -2.4) : 0,
       broken: false
     };
     this.platforms.push(platform);
@@ -171,9 +171,9 @@ class DiliGameEngine {
     const rawDt = (currentTime - this.lastTime) / 1000;
     this.lastTime = currentTime;
 
-    // Normalization factor (Target 60 FPS = dt 0.0166s)
-    const dt = Math.min(0.05, Math.max(0.005, rawDt));
-    const timeScale = dt * 60; // Exactly 1.0 at 60 FPS, 2.0 at 30 FPS, ensuring zero slow-motion!
+    // Normalization factor (Target 60 FPS)
+    const dt = Math.min(0.04, Math.max(0.008, rawDt));
+    const timeScale = dt * 60;
 
     this.update(timeScale, dt);
     this.render();
@@ -184,13 +184,13 @@ class DiliGameEngine {
   update(timeScale, dt) {
     const p = this.player;
 
-    // 1. Time-normalized Horizontal Movement
+    // 1. Snappy Horizontal Movement
     if (this.keys.left) {
       p.vx = -p.speed;
     } else if (this.keys.right) {
       p.vx = p.speed;
     } else {
-      p.vx *= Math.pow(0.78, timeScale);
+      p.vx *= Math.pow(0.72, timeScale);
     }
     p.x += p.vx * timeScale;
 
@@ -198,13 +198,13 @@ class DiliGameEngine {
     if (p.x < -p.width / 2) p.x = this.width - p.width / 2;
     if (p.x > this.width - p.width / 2) p.x = -p.width / 2;
 
-    // 2. Rocket vs Time-normalized Gravity
+    // 2. Rocket vs Snappy Gravity
     if (this.rocketTimer > 0) {
       this.rocketTimer -= dt;
-      p.vy = -10.5;
+      p.vy = -12.0;
       this.particles.emitThruster(p.x + p.width / 2, p.y + p.height, '#00f3ff', 2);
     } else {
-      p.vy += 0.42 * timeScale; // Constant real-world gravity
+      p.vy += 0.48 * timeScale; // Punchy gravity (no floatiness)
     }
     p.y += p.vy * timeScale;
 
@@ -218,7 +218,7 @@ class DiliGameEngine {
           p.x + p.width - 10 > plat.x &&
           p.x + 10 < plat.x + plat.width &&
           p.y + p.height >= plat.y &&
-          p.y + p.height <= plat.y + 22
+          p.y + p.height <= plat.y + 24
         ) {
           if (plat.type === 'glass') {
             plat.broken = true;
@@ -247,13 +247,13 @@ class DiliGameEngine {
         p.y < item.y + item.height + 5
       ) {
         if (item.type === 'spring' && p.vy > 0) {
-          p.vy = p.jumpForce * 1.35;
+          p.vy = p.jumpForce * 1.45;
           this.animator.triggerSpringStretch();
           SoundEngine.spring();
           this.particles.emitBounceDust(item.x + item.width / 2, item.y, '#facc15');
           this.items.splice(i, 1);
         } else if (item.type === 'rocket') {
-          this.rocketTimer = 0.65;
+          this.rocketTimer = 0.70;
           SoundEngine.jetpack();
           this.items.splice(i, 1);
         } else if (item.type === 'crystal') {
@@ -276,14 +276,14 @@ class DiliGameEngine {
       }
     }
 
-    // 6. Camera Smooth Follow
+    // 6. Camera Smooth Fast Follow
     const targetCameraY = p.y - this.height * 0.46;
     if (targetCameraY < this.cameraY) {
-      this.cameraY += (targetCameraY - this.cameraY) * Math.min(1, 0.16 * timeScale);
+      this.cameraY += (targetCameraY - this.cameraY) * Math.min(1, 0.22 * timeScale);
     }
 
     if (p.y < this.highestY) {
-      const diff = Math.floor((this.highestY - p.y) / 10);
+      const diff = Math.floor((this.highestY - p.y) / 9);
       if (diff > 0) {
         this.score += diff;
         this.highestY = p.y;
@@ -297,7 +297,7 @@ class DiliGameEngine {
     const topVisibleY = this.cameraY;
     const highestPlat = this.platforms.reduce((min, p) => p.y < min ? p.y : min, this.height);
     if (highestPlat > topVisibleY - 450) {
-      this.spawnPlatform(highestPlat - Math.floor(Math.random() * 30 + 55));
+      this.spawnPlatform(highestPlat - Math.floor(Math.random() * 26 + 48));
     }
 
     // 8. Cleanup Below
@@ -326,7 +326,6 @@ class DiliGameEngine {
     }
   }
 
-  // ULTRA-FAST 60 FPS MOBILE RENDERER (Clean, Crisp Vector Neon)
   render() {
     const ctx = this.ctx;
 
@@ -346,7 +345,7 @@ class DiliGameEngine {
       ctx.stroke();
     }
 
-    // 3. Fast High-Performance Platform Drawing (No laggy GPU Gaussian blurs!)
+    // 3. Platform Drawing
     for (const plat of this.platforms) {
       if (plat.broken) continue;
 
@@ -404,7 +403,7 @@ class DiliGameEngine {
     // 5. Particles
     this.particles.updateAndDraw(ctx, this.cameraY);
 
-    // 6. Draw Dili Mascot (Mario Action Sprite)
+    // 6. Draw Dili Mascot (Bulletproof rendering)
     this.animator.draw(
       ctx,
       this.player.x,
