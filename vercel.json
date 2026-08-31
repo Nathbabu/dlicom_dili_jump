@@ -1,13 +1,12 @@
 {
-  "cleanUrls": true,
   "rewrites": [
     {
-      "source": "/api/(.*)",
-      "destination": "/server.js"
+      "source": "/api/leaderboard",
+      "destination": "/api/leaderboard.js"
     },
     {
-      "source": "/(.*)",
-      "destination": "/index.html"
+      "source": "/api/score/submit",
+      "destination": "/api/score/submit.js"
     }
   ]
 }
