@@ -123,7 +123,7 @@ body {
 }
 
 .brand-title {
-  font-family: 'Cinzel', serif;
+  font-family: 'Space Grotesk', sans-serif;
   font-weight: 900;
   font-size: 1.4rem;
   letter-spacing: 2px;
@@ -668,50 +668,111 @@ body {
 }
 
 /* ==========================================================================
-   GAME OVER SCREEN - PREMIUM BALANCED REDESIGN
+   GAME OVER SCREEN - BALANCED SPACIOUS CYBER REDESIGN
    ========================================================================== */
 
 .game-over-container {
-  justify-content: flex-start !important;
-  gap: 12px !important;
-  padding: 16px !important;
-  overflow-y: auto !important;
-  -webkit-overflow-scrolling: touch !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+  padding: 20px 18px 16px !important;
+  height: 100% !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
 }
 
-.game-over-header {
-  margin-bottom: 0 !important;
-  padding-bottom: 8px !important;
+/* 1. Header with Surgical Alignment */
+.game-over-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 12px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  width: 100%;
+}
+
+.game-over-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.game-over-dlicom-logo {
+  height: 30px;
+  width: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 0 10px rgba(0, 243, 255, 0.45));
+}
+
+.game-over-titles-col {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.game-over-main-title {
+  margin: 0;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 16px;
+  font-weight: 900;
+  letter-spacing: 1.5px;
+  color: #ef4444;
+  text-shadow: 0 0 16px rgba(239, 68, 68, 0.5);
+  line-height: 1.1;
+}
+
+.game-over-sub-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  font-weight: 600;
+  color: #00f3ff;
+  letter-spacing: 1.2px;
+  opacity: 0.9;
+}
+
+.game-over-header-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+}
+
+.game-over-rank-sub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 8px;
+  font-weight: 600;
+  color: #64748b;
+  letter-spacing: 1px;
 }
 
 .game-over-rank-pill {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
+  font-size: 11.5px;
   font-weight: 800;
   color: #facc15;
   background: rgba(250, 204, 21, 0.12);
   border: 1px solid rgba(250, 204, 21, 0.4);
-  padding: 4px 10px;
-  border-radius: 20px;
+  padding: 3px 9px;
+  border-radius: 6px;
   letter-spacing: 0.5px;
   box-shadow: 0 0 10px rgba(250, 204, 21, 0.2);
+  line-height: 1.2;
 }
 
-/* 1. Hero Mascot Showcase (Centered, energetic, fills upper space) */
+/* 2. Hero Mascot Showcase (Centered & Airy) */
 .game-over-hero-card {
   position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 8px 0 4px;
+  padding: 4px 0;
 }
 
 .game-over-halo-glow {
   position: absolute;
-  width: 140px;
-  height: 140px;
+  width: 145px;
+  height: 145px;
   border-radius: 50%;
   background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
   pointer-events: none;
@@ -719,15 +780,15 @@ body {
 }
 
 @keyframes haloPulse {
-  0%, 100% { transform: scale(1); opacity: 0.6; }
-  50% { transform: scale(1.18); opacity: 0.9; }
+  0%, 100% { transform: scale(1); opacity: 0.55; }
+  50% { transform: scale(1.18); opacity: 0.85; }
 }
 
 .game-over-mascot-img {
-  width: 82px;
-  height: 82px;
+  width: 88px;
+  height: 88px;
   object-fit: contain;
-  filter: drop-shadow(0 4px 14px var(--accent-glow));
+  filter: drop-shadow(0 6px 16px var(--accent-glow));
   z-index: 2;
   animation: mascotBob 2.5s infinite ease-in-out;
 }
@@ -741,10 +802,10 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-top: 6px;
+  margin-top: 8px;
   background: rgba(15, 23, 42, 0.85);
   border: 1px solid rgba(255, 255, 255, 0.12);
-  padding: 3px 12px;
+  padding: 4px 14px;
   border-radius: 20px;
   backdrop-filter: blur(8px);
   z-index: 2;
@@ -769,28 +830,28 @@ body {
   border-radius: 10px;
 }
 
-/* 2. Telemetry Results Card */
+/* 3. Telemetry Results Card (Spacious, Crisp & Premium) */
 .game-over-telemetry-box {
-  background: linear-gradient(180deg, rgba(15, 23, 42, 0.8), rgba(10, 14, 26, 0.9));
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.85), rgba(10, 14, 26, 0.95));
   border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 14px;
-  padding: 12px 14px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 13px 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(12px);
 }
 
 .telemetry-main-score {
   text-align: center;
-  padding-bottom: 10px;
+  padding-bottom: 9px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .telemetry-score-lbl {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
+  font-size: 9.5px;
   font-weight: 700;
   color: #94a3b8;
-  letter-spacing: 1px;
+  letter-spacing: 1.5px;
 }
 
 .telemetry-huge-val {
@@ -806,22 +867,28 @@ body {
 .telemetry-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 8px;
-  margin-top: 10px;
+  gap: 9px;
+  margin-top: 11px;
 }
 
 .telemetry-cell {
-  background: rgba(30, 41, 59, 0.45);
+  background: rgba(30, 41, 59, 0.5);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
-  padding: 6px 10px;
+  border-radius: 10px;
+  padding: 8px 12px;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
 .telemetry-icon {
   font-size: 18px;
+}
+
+.telemetry-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
 }
 
 .telemetry-lbl {
@@ -829,6 +896,7 @@ body {
   font-size: 8.5px;
   color: #64748b;
   letter-spacing: 0.5px;
+  font-weight: 600;
 }
 
 .telemetry-num {
@@ -839,34 +907,36 @@ body {
   line-height: 1.1;
 }
 
-/* 3. Button Stack */
+/* 4. Action Buttons Stack */
 .game-over-btn-stack {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 9px;
   width: 100%;
-  margin-top: 2px;
 }
 
 .game-over-primary-btn {
-  height: 46px !important;
+  height: 48px !important;
   font-size: 14px !important;
+  font-weight: 800 !important;
+  letter-spacing: 1px !important;
+  box-shadow: 0 0 20px rgba(0, 255, 194, 0.35) !important;
 }
 
 .game-over-sub-btn {
-  height: 38px !important;
-  font-size: 11.5px !important;
-  border-color: rgba(255, 255, 255, 0.2) !important;
+  height: 40px !important;
+  font-size: 12px !important;
+  border-color: rgba(255, 255, 255, 0.22) !important;
 }
 
 .game-over-split-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 8px;
+  gap: 9px;
 }
 
 .btn-half {
-  height: 36px !important;
+  height: 38px !important;
   font-size: 11px !important;
 }
 
@@ -874,4 +944,28 @@ body {
   background: #000 !important;
   border-color: rgba(255, 255, 255, 0.3) !important;
   color: #fff !important;
+}
+
+/* 5. Subtle Footer Tag */
+.game-over-footer-credit {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: #475569;
+  letter-spacing: 1px;
+  text-align: center;
+  padding-top: 2px;
+}
+
+@media (max-height: 680px) {
+  .game-over-container {
+    padding: 12px 14px 10px !important;
+    overflow-y: auto !important;
+  }
+  .game-over-mascot-img {
+    width: 68px !important;
+    height: 68px !important;
+  }
+  .telemetry-huge-val {
+    font-size: 30px !important;
+  }
 }

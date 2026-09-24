@@ -181,24 +181,27 @@
       </div>
     </div>
 
-    <!-- ===================================================================== -->
-    <!-- 3. GAME OVER OVERLAY (WITH HOME SCREEN & LEADERBOARD BUTTONS) -->
+        <!-- ===================================================================== -->
+    <!-- 3. GAME OVER OVERLAY (CLEAN ALIGNMENT & SPACIOUS BALANCED CYBER UI) -->
     <!-- ===================================================================== -->
     <div id="game-over-screen" class="overlay-screen game-over-container hidden">
       
-      <!-- Top Brand Header -->
-      <div class="brand-header game-over-header">
-        <div style="display:flex;align-items:center;gap:10px;">
-          <img src="/assets/dlicom-logo-transparent.png" alt="Dlicom" class="brand-dlicom-logo" />
-          <div>
-            <div class="brand-title" style="color:#ef4444;text-shadow:0 0 16px rgba(239,68,68,0.4);">MISSION CONCLUDED</div>
-            <div class="brand-badge">DLICOM CYBER ARCADE</div>
+      <!-- Top Brand Header: Balanced 2-Row Alignment -->
+      <div class="game-over-header-row">
+        <div class="game-over-header-left">
+          <img src="/assets/dlicom-logo-transparent.png" alt="Dlicom" class="game-over-dlicom-logo" />
+          <div class="game-over-titles-col">
+            <h2 class="game-over-main-title">MISSION CONCLUDED</h2>
+            <div class="game-over-sub-tag">DLICOM CYBER ARCADE</div>
           </div>
         </div>
-        <div id="final-rank-badge" class="game-over-rank-pill">RANK #--</div>
+        <div class="game-over-header-right">
+          <span class="game-over-rank-sub">GLOBAL STANDING</span>
+          <div id="final-rank-badge" class="game-over-rank-pill">RANK #--</div>
+        </div>
       </div>
 
-      <!-- Hero Mascot Spotlight (Fills the void with character & charm) -->
+      <!-- Hero Mascot Spotlight (Centered & Airy) -->
       <div class="game-over-hero-card">
         <div class="game-over-halo-glow"></div>
         <img id="game-over-avatar-img" src="/assets/characters/dili-jump-cutout-mint.png" alt="Dili" class="game-over-mascot-img" />
@@ -218,36 +221,36 @@
         <div class="telemetry-grid">
           <div class="telemetry-cell">
             <span class="telemetry-icon">🎯</span>
-            <div>
-              <div class="telemetry-lbl">SCORE</div>
+            <div class="telemetry-info">
+              <div class="telemetry-lbl">ALTITUDE</div>
               <div id="final-score-val" class="telemetry-num">0</div>
             </div>
           </div>
           <div class="telemetry-cell">
             <span class="telemetry-icon">⚡</span>
-            <div>
+            <div class="telemetry-info">
               <div class="telemetry-lbl">MAX COMBO</div>
               <div id="final-combo-val" class="telemetry-num" style="color:#facc15;">x1</div>
             </div>
           </div>
           <div class="telemetry-cell">
             <span class="telemetry-icon">💎</span>
-            <div>
+            <div class="telemetry-info">
               <div class="telemetry-lbl">CRYSTALS</div>
               <div id="final-crystals-val" class="telemetry-num" style="color:#a855f7;">0</div>
             </div>
           </div>
           <div class="telemetry-cell">
             <span class="telemetry-icon">🏆</span>
-            <div>
-              <div class="telemetry-lbl">GLOBAL RANK</div>
+            <div class="telemetry-info">
+              <div class="telemetry-lbl">LEADERBOARD</div>
               <div id="final-rank-num" class="telemetry-num" style="color:#00f3ff;">#--</div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Action Buttons Stack -->
+      <!-- Action Buttons Stack (Full Breathing Room) -->
       <div class="game-over-btn-stack">
         <button id="btn-play-again" class="btn-primary game-over-primary-btn">
           <span>🔄 JUMP AGAIN</span>
@@ -265,6 +268,11 @@
             <span>𝕏 SHARE ON 𝕏</span>
           </button>
         </div>
+      </div>
+
+      <!-- Subtle Cyber Dispatch Footer (Eliminates bottom void feeling) -->
+      <div class="game-over-footer-credit">
+        DLICOM ARCADE PROTOCOL • v2.4 SECURE RUN
       </div>
 
     </div>
