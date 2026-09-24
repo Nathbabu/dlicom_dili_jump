@@ -48,8 +48,12 @@ module.exports = async (req, res) => {
       console.warn('Error reading from redis:', e.message);
     }
 
-    // 2. Update existing or insert
-    const idx = current.findIndex(e => e.pilot.toLowerCase() === cleanPilot.toLowerCase());
+    // 2. Update existing or insert (PER PILOT + PER DIFFICULTY!)
+    const idx = current.findIndex(e =>
+      e.pilot.toLowerCase() === cleanPilot.toLowerCase() &&
+      (e.difficulty || 'normal').toLowerCase() === cleanDiff
+    );
+
     if (idx !== -1) {
       if (entry.score > current[idx].score) {
         current[idx] = Object.assign({}, current[idx], entry);
@@ -58,8 +62,8 @@ module.exports = async (req, res) => {
       current.push(entry);
     }
 
-    // 3. Sort & truncate
-    current = current.sort((a, b) => b.score - a.score).slice(0, 100);
+    // 3. Sort & truncate (keep top 200 entries)
+    current = current.sort((a, b) => b.score - a.score).slice(0, 200);
 
     // 4. Save to Upstash Redis
     await fetch(`${UPSTASH_REDIS_REST_URL}/set/dlicom_doodlejump_leaderboard`, {
@@ -71,13 +75,19 @@ module.exports = async (req, res) => {
       body: JSON.stringify(current)
     });
 
-    const rank = current.findIndex(e => e.pilot.toLowerCase() === cleanPilot.toLowerCase()) + 1;
+    // 5. Calculate rank specifically within this difficulty mode
+    const modeEntries = current
+      .filter(e => (e.difficulty || 'normal').toLowerCase() === cleanDiff)
+      .sort((a, b) => b.score - a.score);
+
+    const modeRank = modeEntries.findIndex(e => e.pilot.toLowerCase() === cleanPilot.toLowerCase()) + 1;
 
     return res.status(200).json({
       success: true,
-      rank: rank > 0 ? rank : current.length,
+      rank: modeRank > 0 ? modeRank : modeEntries.length,
       entry: entry,
-      totalPilots: current.length
+      difficulty: cleanDiff,
+      totalPilots: modeEntries.length
     });
   } catch (e) {
     return res.status(500).json({ success: false, error: e.message });

@@ -10,12 +10,12 @@ const DIFFICULTY_CONFIGS = {
     multiplier: 1.0,
     padWidth: 84,
     minPadWidth: 70,
-    minGap: 52,
-    maxGap: 72,
-    movingChance: 0.12,
-    movingSpeed: 2.0,
-    glassChance: 0.10,
-    springChance: 0.11,
+    minGap: 48,
+    maxGap: 64,
+    movingChance: 0.10,
+    movingSpeed: 1.8,
+    glassChance: 0.08,
+    springChance: 0.12,
     rocketChance: 0.04,
     crystalChance: 0.24
   },
@@ -25,12 +25,12 @@ const DIFFICULTY_CONFIGS = {
     multiplier: 1.0,
     padWidth: 78,
     minPadWidth: 64,
-    minGap: 56,
-    maxGap: 76,
-    movingChance: 0.22,
-    movingSpeed: 2.5,
-    glassChance: 0.18,
-    springChance: 0.09,
+    minGap: 50,
+    maxGap: 68,
+    movingChance: 0.18,
+    movingSpeed: 2.2,
+    glassChance: 0.10,
+    springChance: 0.10,
     rocketChance: 0.035,
     crystalChance: 0.20
   },
@@ -40,12 +40,12 @@ const DIFFICULTY_CONFIGS = {
     multiplier: 1.5,
     padWidth: 70,
     minPadWidth: 54,
-    minGap: 60,
-    maxGap: 80,
-    movingChance: 0.32,
-    movingSpeed: 3.2,
-    glassChance: 0.26,
-    springChance: 0.06,
+    minGap: 54,
+    maxGap: 74,
+    movingChance: 0.28,
+    movingSpeed: 2.8,
+    glassChance: 0.16,
+    springChance: 0.07,
     rocketChance: 0.02,
     crystalChance: 0.15
   }
@@ -81,7 +81,7 @@ class DiliGameEngine {
       vx: 0,
       vy: 0,
       speed: 6.4,
-      jumpForce: -11.0     // Balanced height (~126px peak) resolving tight jump height while requiring steering
+      jumpForce: -11.4     // High buoyant clearance (~141px peak) ensuring zero unreachable jumps
     };
 
     // Lives & Recovery
@@ -225,39 +225,35 @@ class DiliGameEngine {
     }
   }
 
-    spawnPlatform(y) {
+      spawnPlatform(y) {
     const cfg = this.diffConfig;
     let padWidth = cfg.padWidth;
     if (this.rawScore > 150) padWidth = Math.max(cfg.minPadWidth, padWidth - 6);
     if (this.rawScore > 400) padWidth = Math.max(cfg.minPadWidth, padWidth - 10);
 
-    // Active Steering Enforcement:
-    // Ensure every new platform is horizontally separated by at least 65px from the last one
-    // so the player cannot just bounce straight up without moving!
+    // GUARANTEED REACHABILITY WITH MANDATORY STEERING:
+    // Every platform is between 40px (min) and 140px (max) horizontally from the last one.
+    // At speed 6.4, 140px takes only 21 frames to reach - perfectly comfortable on mobile touch!
     const lastPlat = this.platforms.length > 0 ? this.platforms[this.platforms.length - 1] : null;
     let x;
 
     if (lastPlat) {
-      const minOffset = 65;
-      const canGoLeft = (lastPlat.x - minOffset) > 16;
-      const canGoRight = (lastPlat.x + minOffset + padWidth) < (this.width - 16);
+      const minStep = 40;
+      const maxStep = 140;
+      const canGoLeft = (lastPlat.x - minStep) >= 16;
+      const canGoRight = (lastPlat.x + minStep + padWidth) <= (this.width - 16);
 
-      let chooseLeft;
-      if (canGoLeft && canGoRight) {
-        chooseLeft = Math.random() < 0.5;
-      } else if (canGoLeft) {
-        chooseLeft = true;
-      } else {
-        chooseLeft = false;
-      }
+      let goLeft = Math.random() < 0.5;
+      if (!canGoLeft) goLeft = false;
+      if (!canGoRight) goLeft = true;
 
-      if (chooseLeft) {
-        const minX = 16;
-        const maxX = Math.max(minX, lastPlat.x - minOffset);
+      if (goLeft) {
+        const minX = Math.max(16, lastPlat.x - maxStep);
+        const maxX = Math.max(minX, lastPlat.x - minStep);
         x = Math.random() * (maxX - minX) + minX;
       } else {
-        const minX = Math.min(this.width - padWidth - 16, lastPlat.x + minOffset);
-        const maxX = this.width - padWidth - 16;
+        const minX = Math.min(this.width - padWidth - 16, lastPlat.x + minStep);
+        const maxX = Math.min(this.width - padWidth - 16, lastPlat.x + maxStep);
         x = Math.random() * (maxX - minX) + minX;
       }
     } else {
@@ -266,9 +262,11 @@ class DiliGameEngine {
 
     const rand = Math.random();
     let type = 'standard';
-    if (rand < cfg.movingChance) {
+    // Prevent consecutive glass platforms so player is never stranded in an impossible trap
+    const lastWasGlass = lastPlat && lastPlat.type === 'glass';
+    if (!lastWasGlass && rand < cfg.movingChance) {
       type = 'moving';
-    } else if (rand < cfg.movingChance + cfg.glassChance) {
+    } else if (!lastWasGlass && rand < cfg.movingChance + cfg.glassChance) {
       type = 'glass';
     }
 
@@ -341,7 +339,7 @@ class DiliGameEngine {
       p.vy = -12.0;
       this.particles.emitThruster(p.x + p.width / 2, p.y + p.height, '#00f3ff', 2);
     } else {
-      p.vy += 0.48 * timeScale; // Punchy gravity (no floatiness)
+      p.vy += 0.46 * timeScale; // Generous airtime
     }
     p.y += p.vy * timeScale;
 

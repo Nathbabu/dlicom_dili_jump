@@ -369,12 +369,22 @@
     const listBody = document.getElementById('leaderboard-rows');
     if (!listBody) return;
 
-    let filtered = cachedLeaderboardRows;
-    if (currentLeaderboardFilter !== 'all') {
-      filtered = cachedLeaderboardRows.filter(entry => {
-        const diff = (entry.difficulty || 'normal').toLowerCase();
-        return diff === currentLeaderboardFilter;
+    let filtered = [];
+    if (currentLeaderboardFilter === 'all') {
+      // In ALL tab, show each unique pilot's highest score across all difficulties
+      const bestMap = new Map();
+      cachedLeaderboardRows.forEach(e => {
+        const key = (e.pilot || '').toLowerCase();
+        if (!bestMap.has(key) || e.score > bestMap.get(key).score) {
+          bestMap.set(key, e);
+        }
       });
+      filtered = Array.from(bestMap.values()).sort((a, b) => b.score - a.score);
+    } else {
+      // In mode tabs, show all pilots who have a record in this specific difficulty
+      filtered = cachedLeaderboardRows
+        .filter(entry => (entry.difficulty || 'normal').toLowerCase() === currentLeaderboardFilter)
+        .sort((a, b) => b.score - a.score);
     }
 
     if (filtered.length === 0) {
