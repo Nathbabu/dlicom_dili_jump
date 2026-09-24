@@ -274,12 +274,24 @@
     const finalCmb = document.getElementById('final-combo-val');
     const finalCrys = document.getElementById('final-crystals-val');
     const finalDiff = document.getElementById('final-diff-note');
+    const finalRankNum = document.getElementById('final-rank-num');
+    const gameOverAvatar = document.getElementById('game-over-avatar-img');
+    const gameOverPilot = document.getElementById('game-over-pilot-name');
 
     if (finalAlt) finalAlt.textContent = stats.score + ' PTS';
     if (finalScr) finalScr.textContent = stats.score;
     if (finalCmb) finalCmb.textContent = 'x' + stats.maxCombo;
     if (finalCrys) finalCrys.textContent = stats.crystals;
-    if (finalDiff) finalDiff.textContent = `DIFFICULTY: ${(stats.difficulty || 'normal').toUpperCase()}${stats.difficulty === 'hard' ? ' (1.5x BONUS)' : ''}`;
+    if (gameOverPilot) gameOverPilot.textContent = 'PILOT: ' + (pilotName || 'DILI');
+    if (gameOverAvatar) {
+      gameOverAvatar.src = `/assets/characters/dili-jump-cutout-${stats.suitColor || selectedSuit || 'mint'}.png`;
+    }
+    if (finalDiff) {
+      finalDiff.textContent = (stats.difficulty || 'normal').toUpperCase() + (stats.difficulty === 'hard' ? ' (1.5x)' : '');
+      finalDiff.style.color = stats.difficulty === 'hard' ? '#ef4444' : (stats.difficulty === 'medium' ? '#facc15' : '#00ffc2');
+      finalDiff.style.borderColor = stats.difficulty === 'hard' ? 'rgba(239,68,68,0.4)' : (stats.difficulty === 'medium' ? 'rgba(250,204,21,0.4)' : 'rgba(0,255,194,0.4)');
+      finalDiff.style.background = stats.difficulty === 'hard' ? 'rgba(239,68,68,0.15)' : (stats.difficulty === 'medium' ? 'rgba(250,204,21,0.15)' : 'rgba(0,255,194,0.15)');
+    }
 
     // Submit to Upstash Redis Leaderboard (Globally synced 24/7)
     try {
@@ -300,7 +312,9 @@
         const data = await res.json();
         if (data.rank) {
           const rankEl = document.getElementById('final-rank-badge');
+          const rankNumEl = document.getElementById('final-rank-num');
           if (rankEl) rankEl.textContent = 'GLOBAL RANK #' + data.rank;
+          if (rankNumEl) rankNumEl.textContent = '#' + data.rank;
         }
       }
     } catch (e) {

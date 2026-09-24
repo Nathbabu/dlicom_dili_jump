@@ -184,55 +184,84 @@
     <!-- ===================================================================== -->
     <!-- 3. GAME OVER OVERLAY (WITH HOME SCREEN & LEADERBOARD BUTTONS) -->
     <!-- ===================================================================== -->
-    <div id="game-over-screen" class="overlay-screen hidden">
+    <div id="game-over-screen" class="overlay-screen game-over-container hidden">
       
-      <div class="brand-header">
+      <!-- Top Brand Header -->
+      <div class="brand-header game-over-header">
         <div style="display:flex;align-items:center;gap:10px;">
           <img src="/assets/dlicom-logo-transparent.png" alt="Dlicom" class="brand-dlicom-logo" />
-          <img src="/assets/characters/dili-fall-cutout-mint.png" alt="Dili" class="brand-mascot-avatar" />
           <div>
-            <div class="brand-title" style="color:#ef4444;">MISSION CONCLUDED</div>
+            <div class="brand-title" style="color:#ef4444;text-shadow:0 0 16px rgba(239,68,68,0.4);">MISSION CONCLUDED</div>
             <div class="brand-badge">DLICOM CYBER ARCADE</div>
           </div>
         </div>
-        <div id="final-rank-badge" class="brand-badge" style="color:#facc15;border-color:#facc15;">GLOBAL RANK #--</div>
+        <div id="final-rank-badge" class="game-over-rank-pill">RANK #--</div>
       </div>
 
-      <div style="background:rgba(15,23,42,0.6);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:16px;margin:14px 0;text-align:center;">
-        <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#94a3b8;">FINAL SCORE</div>
-        <div id="final-altitude-val" style="font-size:36px;font-weight:900;color:var(--accent-color);text-shadow:0 0 20px var(--accent-glow);">0 PTS</div>
-        <div id="final-diff-note" style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#facc15;margin-top:4px;">MODE: NORMAL</div>
+      <!-- Hero Mascot Spotlight (Fills the void with character & charm) -->
+      <div class="game-over-hero-card">
+        <div class="game-over-halo-glow"></div>
+        <img id="game-over-avatar-img" src="/assets/characters/dili-jump-cutout-mint.png" alt="Dili" class="game-over-mascot-img" />
+        <div class="game-over-pilot-banner">
+          <span id="game-over-pilot-name" class="game-over-pilot-name">PILOT: DILI</span>
+          <span id="final-diff-note" class="game-over-diff-pill">NORMAL</span>
+        </div>
+      </div>
 
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px;border-top:1px solid rgba(255,255,255,0.08);padding-top:12px;font-family:'JetBrains Mono',monospace;">
-          <div>
-            <div style="font-size:10px;color:#64748b;">SCORE</div>
-            <div id="final-score-val" style="font-weight:800;color:#fff;">0</div>
+      <!-- Telemetry Results Card -->
+      <div class="game-over-telemetry-box">
+        <div class="telemetry-main-score">
+          <div class="telemetry-score-lbl">FINAL FLIGHT SCORE</div>
+          <div id="final-altitude-val" class="telemetry-huge-val">0 PTS</div>
+        </div>
+
+        <div class="telemetry-grid">
+          <div class="telemetry-cell">
+            <span class="telemetry-icon">🎯</span>
+            <div>
+              <div class="telemetry-lbl">SCORE</div>
+              <div id="final-score-val" class="telemetry-num">0</div>
+            </div>
           </div>
-          <div>
-            <div style="font-size:10px;color:#64748b;">MAX COMBO</div>
-            <div id="final-combo-val" style="font-weight:800;color:#facc15;">x1</div>
+          <div class="telemetry-cell">
+            <span class="telemetry-icon">⚡</span>
+            <div>
+              <div class="telemetry-lbl">MAX COMBO</div>
+              <div id="final-combo-val" class="telemetry-num" style="color:#facc15;">x1</div>
+            </div>
           </div>
-          <div>
-            <div style="font-size:10px;color:#64748b;">CRYSTALS</div>
-            <div id="final-crystals-val" style="font-weight:800;color:#a855f7;">0</div>
+          <div class="telemetry-cell">
+            <span class="telemetry-icon">💎</span>
+            <div>
+              <div class="telemetry-lbl">CRYSTALS</div>
+              <div id="final-crystals-val" class="telemetry-num" style="color:#a855f7;">0</div>
+            </div>
+          </div>
+          <div class="telemetry-cell">
+            <span class="telemetry-icon">🏆</span>
+            <div>
+              <div class="telemetry-lbl">GLOBAL RANK</div>
+              <div id="final-rank-num" class="telemetry-num" style="color:#00f3ff;">#--</div>
+            </div>
           </div>
         </div>
       </div>
 
-      <div style="display:flex;flex-direction:column;gap:10px;width:100%;">
-        <button id="btn-play-again" class="btn-primary">
+      <!-- Action Buttons Stack -->
+      <div class="game-over-btn-stack">
+        <button id="btn-play-again" class="btn-primary game-over-primary-btn">
           <span>🔄 JUMP AGAIN</span>
         </button>
 
-        <button id="btn-return-home" class="btn-secondary" style="border-color:var(--accent-color);color:#fff;">
+        <button id="btn-return-home" class="btn-secondary game-over-sub-btn">
           <span>🏠 MAIN MENU / CHANGE SUIT</span>
         </button>
 
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-          <button id="btn-gameover-leaderboard" class="btn-secondary" style="font-size:11px;">
+        <div class="game-over-split-row">
+          <button id="btn-gameover-leaderboard" class="btn-secondary btn-half">
             <span>🏆 LEADERBOARD</span>
           </button>
-          <button id="btn-share-x" class="btn-secondary" style="background:#000;border-color:rgba(255,255,255,0.3);color:#fff;font-size:11px;">
+          <button id="btn-share-x" class="btn-secondary btn-half btn-x-dark">
             <span>𝕏 SHARE ON 𝕏</span>
           </button>
         </div>
