@@ -156,6 +156,7 @@ class DiliGameEngine {
     });
 
     const handlePointerDown = (clientX) => {
+      if (this.isPaused) return;
       const rect = this.canvas.getBoundingClientRect();
       const clickX = clientX - rect.left;
       if (clickX < rect.width / 2) {

@@ -313,7 +313,7 @@ body {
   justify-content: space-between;
   align-items: flex-start;
   pointer-events: none;
-  z-index: 20;
+  z-index: 45;
 }
 
 .hud-tag {
@@ -614,7 +614,8 @@ body {
 .hud-right-group {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+  pointer-events: auto !important;
 }
 
 .hud-diff-pill {
@@ -625,10 +626,27 @@ body {
 }
 
 .hud-pause-btn {
-  width: 34px !important;
-  height: 34px !important;
-  font-size: 14px !important;
-  border-color: rgba(255, 255, 255, 0.2) !important;
+  width: 38px !important;
+  height: 38px !important;
+  font-size: 16px !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  background: rgba(15, 23, 42, 0.8) !important;
+  backdrop-filter: blur(8px) !important;
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  touch-action: manipulation !important;
+  position: relative !important;
+  z-index: 50 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 8px !important;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.hud-pause-btn:active {
+  transform: scale(0.92) !important;
+  background: rgba(255, 255, 255, 0.2) !important;
 }
 
 /* 4. On-Screen Recovery Banner Alert */

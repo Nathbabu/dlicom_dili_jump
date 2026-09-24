@@ -181,7 +181,11 @@
   }
 
   // 6. Pause System
-  function togglePause() {
+  function togglePause(e) {
+    if (e) {
+      if (typeof e.stopPropagation === 'function') e.stopPropagation();
+      if (typeof e.preventDefault === 'function') e.preventDefault();
+    }
     if (!game || !game.running) return;
     if (game.isPaused) {
       game.resume();
@@ -192,8 +196,25 @@
     }
   }
 
-  if (btnHudPause) btnHudPause.addEventListener('click', togglePause);
-  if (btnPauseResume) btnPauseResume.addEventListener('click', togglePause);
+  if (btnHudPause) {
+    btnHudPause.addEventListener('click', togglePause);
+    btnHudPause.addEventListener('touchstart', (e) => {
+      e.stopPropagation();
+    }, { passive: true });
+    btnHudPause.addEventListener('touchend', (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      togglePause(e);
+    });
+  }
+  if (btnPauseResume) {
+    btnPauseResume.addEventListener('click', togglePause);
+    btnPauseResume.addEventListener('touchend', (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      togglePause(e);
+    });
+  }
 
   if (btnPauseSound) {
     btnPauseSound.addEventListener('click', () => {
