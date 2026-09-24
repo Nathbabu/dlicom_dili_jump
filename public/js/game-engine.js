@@ -10,8 +10,8 @@ const DIFFICULTY_CONFIGS = {
     multiplier: 1.0,
     padWidth: 92,
     minPadWidth: 74,
-    minGap: 44,
-    maxGap: 62,
+    minGap: 38,
+    maxGap: 54,
     movingChance: 0.10,
     movingSpeed: 1.8,
     glassChance: 0.10,
@@ -25,8 +25,8 @@ const DIFFICULTY_CONFIGS = {
     multiplier: 1.0,
     padWidth: 84,
     minPadWidth: 68,
-    minGap: 48,
-    maxGap: 68,
+    minGap: 42,
+    maxGap: 58,
     movingChance: 0.18,
     movingSpeed: 2.3,
     glassChance: 0.18,
@@ -40,8 +40,8 @@ const DIFFICULTY_CONFIGS = {
     multiplier: 1.5,
     padWidth: 72,
     minPadWidth: 56,
-    minGap: 52,
-    maxGap: 74,
+    minGap: 46,
+    maxGap: 64,
     movingChance: 0.28,
     movingSpeed: 3.0,
     glassChance: 0.26,
@@ -80,8 +80,8 @@ class DiliGameEngine {
       height: 64,
       vx: 0,
       vy: 0,
-      speed: 6.4,
-      jumpForce: -10.8
+      speed: 6.6,          // Snappy horizontal steering
+      jumpForce: -11.8     // High, buoyant jump (~158px height for effortless reach)
     };
 
     // Lives & Recovery
@@ -228,23 +228,33 @@ class DiliGameEngine {
   spawnPlatform(y) {
     const cfg = this.diffConfig;
     let padWidth = cfg.padWidth;
-    if (this.rawScore > 120) padWidth = Math.max(cfg.minPadWidth, padWidth - 6);
-    if (this.rawScore > 350) padWidth = Math.max(cfg.minPadWidth, padWidth - 10);
-    if (this.rawScore > 650) padWidth = cfg.minPadWidth;
+    if (this.rawScore > 150) padWidth = Math.max(cfg.minPadWidth, padWidth - 5);
+    if (this.rawScore > 400) padWidth = Math.max(cfg.minPadWidth, padWidth - 8);
 
-    const x = Math.random() * (this.width - padWidth - 25) + 12;
+    // Get previous platform to calculate guaranteed reachability
+    const lastPlat = this.platforms.length > 0 ? this.platforms[this.platforms.length - 1] : null;
+    let x;
+
+    if (lastPlat) {
+      // SMART REACHABILITY: Ensure the next platform is within comfortable horizontal steering reach (max 160px step)
+      const maxHorizStep = 165;
+      const minX = Math.max(14, lastPlat.x - maxHorizStep);
+      const maxX = Math.min(this.width - padWidth - 14, lastPlat.x + maxHorizStep);
+      x = Math.random() * (maxX - minX) + minX;
+    } else {
+      x = Math.random() * (this.width - padWidth - 28) + 14;
+    }
 
     const rand = Math.random();
     let type = 'standard';
     if (rand < cfg.movingChance) {
       type = 'moving';
     } else if (rand < cfg.movingChance + cfg.glassChance) {
-      // GUARANTEED REACHABILITY: If spawning glass, make sure the previous platform was solid
       type = 'glass';
     }
 
     const platform = {
-      x: x,
+      x: Math.round(x),
       y: y,
       width: padWidth,
       height: 14,
@@ -264,6 +274,24 @@ class DiliGameEngine {
       } else if (itemRand < cfg.springChance + cfg.rocketChance + cfg.crystalChance) {
         this.items.push({ type: 'crystal', x: x + padWidth / 2 - 9, y: y - 20, width: 18, height: 18 });
       }
+    }
+
+    // BONUS REACHABILITY: 20% of the time, spawn a twin platform on the opposite side of the screen
+    // This gives the player alternative routes and ensures they are NEVER stranded!
+    if (type !== 'glass' && Math.random() < 0.22) {
+      const oppX = (x > this.width / 2) 
+        ? Math.random() * (this.width / 2 - padWidth - 20) + 14 
+        : Math.random() * (this.width / 2 - padWidth - 20) + this.width / 2 + 10;
+      
+      this.platforms.push({
+        x: Math.round(oppX),
+        y: y + (Math.random() * 16 - 8),
+        width: padWidth,
+        height: 14,
+        type: 'standard',
+        vx: 0,
+        broken: false
+      });
     }
   }
 
@@ -312,7 +340,7 @@ class DiliGameEngine {
       p.vy = -12.0;
       this.particles.emitThruster(p.x + p.width / 2, p.y + p.height, '#00f3ff', 2);
     } else {
-      p.vy += 0.48 * timeScale;
+      p.vy += 0.44 * timeScale; // Generous air-time and floatiness
     }
     p.y += p.vy * timeScale;
 
@@ -358,7 +386,7 @@ class DiliGameEngine {
         p.y < item.y + item.height + 5
       ) {
         if (item.type === 'spring' && p.vy > 0) {
-          p.vy = p.jumpForce * 1.45;
+          p.vy = p.jumpForce * 1.55;
           this.animator.triggerSpringStretch();
           SoundEngine.spring();
           this.particles.emitBounceDust(item.x + item.width / 2, item.y, '#facc15');
