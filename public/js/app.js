@@ -244,6 +244,20 @@
     return rec;
   }
 
+    function syncLeaderboardRecords(list) {
+    const p = (pilotName || localStorage.getItem('dili_jump_pilot') || '').toLowerCase().trim();
+    if (!p || !Array.isArray(list)) return;
+    list.forEach(entry => {
+      if (entry && entry.pilot && entry.pilot.toLowerCase() === p) {
+        const diff = (entry.difficulty || 'normal').toLowerCase();
+        const currentScore = getPersonalRecord(diff);
+        if (entry.score > currentScore) {
+          setPersonalRecord(diff, entry.score);
+        }
+      }
+    });
+  }
+
   function setPersonalRecord(diff, score) {
     const d = (diff || selectedDifficulty || 'normal').toLowerCase();
     const p = (pilotName || localStorage.getItem('dili_jump_pilot') || '').toLowerCase().trim();
@@ -367,6 +381,13 @@
     pauseScreen.classList.add('hidden');
     gameOverScreen.classList.remove('hidden');
 
+    // Ensure celebration banner is strictly hidden by default
+    const recordBanner = document.getElementById('game-over-record-banner');
+    if (recordBanner) recordBanner.classList.add('hidden');
+
+    const prevPB = getPersonalRecord(stats.difficulty || selectedDifficulty);
+    let celebrated = false;
+
     const finalAlt = document.getElementById('final-altitude-val');
     const finalScr = document.getElementById('final-score-val');
     const finalCmb = document.getElementById('final-combo-val');
@@ -413,6 +434,22 @@
           const rankNumEl = document.getElementById('final-rank-num');
           if (rankEl) rankEl.textContent = 'GLOBAL RANK #' + data.rank;
           if (rankNumEl) rankNumEl.textContent = '#' + data.rank;
+        }
+
+        // Authoritative Record Check from Server & Local PB
+        const isTrueRecord = data.isNewRecord === true || (stats.score > prevPB && stats.score > 50);
+        if (isTrueRecord && stats.score > 50 && !celebrated) {
+          celebrated = true;
+          setPersonalRecord(stats.difficulty || selectedDifficulty, stats.score);
+          if (recordBanner) {
+            recordBanner.classList.remove('hidden');
+            const textEl = recordBanner.querySelector('.record-badge-text');
+            if (textEl) textEl.textContent = `NEW ${(stats.difficulty || selectedDifficulty).toUpperCase()} RECORD: ${stats.score} PTS!`;
+          }
+          SoundEngine.victory();
+          launchCelebrationConfetti();
+        } else {
+          if (recordBanner) recordBanner.classList.add('hidden');
         }
       }
     } catch (e) {
@@ -523,11 +560,15 @@
       const res = await fetch('/api/leaderboard');
       const data = await res.json();
       cachedLeaderboardRows = data.leaderboard || [];
+      syncLeaderboardRecords(cachedLeaderboardRows);
       renderFilteredLeaderboard();
     } catch (e) {
       listBody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;color:#ef4444;">Failed to load leaderboard.</td></tr>';
     }
   }
+
+  // Seed leaderboard cache & sync pilot personal records on startup
+  fetchAndRenderLeaderboard();
 
   // 12. Audio Toggle
   btnMute.addEventListener('click', () => {

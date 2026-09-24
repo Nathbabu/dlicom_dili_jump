@@ -54,12 +54,17 @@ module.exports = async (req, res) => {
       (e.difficulty || 'normal').toLowerCase() === cleanDiff
     );
 
+    let isNewRecord = false;
+    let prevScore = 0;
     if (idx !== -1) {
+      prevScore = current[idx].score;
       if (entry.score > current[idx].score) {
         current[idx] = Object.assign({}, current[idx], entry);
+        isNewRecord = true;
       }
     } else {
       current.push(entry);
+      isNewRecord = true;
     }
 
     // 3. Sort & truncate (keep top 200 entries)
@@ -87,7 +92,10 @@ module.exports = async (req, res) => {
       rank: modeRank > 0 ? modeRank : modeEntries.length,
       entry: entry,
       difficulty: cleanDiff,
-      totalPilots: modeEntries.length
+      totalPilots: modeEntries.length,
+      isNewRecord: isNewRecord,
+      prevScore: prevScore,
+      personalBest: Math.max(prevScore, entry.score)
     });
   } catch (e) {
     return res.status(500).json({ success: false, error: e.message });

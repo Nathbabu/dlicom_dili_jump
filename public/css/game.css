@@ -1094,6 +1094,12 @@ body {
 }
 
 /* New Personal Record Glowing Celebration Banner on Game Over */
+.hidden { display: none !important; }
+
+.game-over-record-banner.hidden {
+  display: none !important;
+}
+
 .game-over-record-banner {
   display: flex;
   align-items: center;
