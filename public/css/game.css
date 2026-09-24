@@ -458,3 +458,206 @@ body {
     height: 28px !important;
   }
 }
+
+/* ==========================================================================
+   DLICOM UPGRADE EXPANSION - HUD LOGO, LIVES, DIFFICULTY & PAUSE
+   ========================================================================== */
+
+/* 1. HUD Left / Logo styling */
+.hud-left-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hud-dlicom-logo {
+  height: 24px;
+  width: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 0 6px rgba(0, 243, 255, 0.45));
+}
+
+.brand-dlicom-logo {
+  height: 28px;
+  width: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 0 8px rgba(0, 243, 255, 0.5));
+}
+
+.brand-mascot-avatar {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 8px rgba(0, 255, 194, 0.5));
+}
+
+/* 2. Recovery Hearts Box */
+.hud-lives-box {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(15, 23, 42, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 4px 8px;
+  border-radius: 20px;
+  backdrop-filter: blur(6px);
+}
+
+.hud-heart {
+  font-size: 14px;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  display: inline-block;
+}
+
+.hud-heart.active {
+  filter: drop-shadow(0 0 4px #ef4444);
+  animation: heartPulse 1.8s infinite ease-in-out;
+}
+
+.hud-heart.lost {
+  opacity: 0.25;
+  filter: grayscale(1);
+  transform: scale(0.85);
+}
+
+@keyframes heartPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+}
+
+/* 3. HUD Right Group & Pause Button */
+.hud-right-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hud-diff-pill {
+  font-size: 10px;
+  font-weight: 800;
+  color: #00ffc2;
+  letter-spacing: 0.5px;
+}
+
+.hud-pause-btn {
+  width: 34px !important;
+  height: 34px !important;
+  font-size: 14px !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* 4. On-Screen Recovery Banner Alert */
+.hud-recovery-banner {
+  position: absolute;
+  top: 75px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(90deg, rgba(234, 179, 8, 0.95), rgba(249, 115, 22, 0.95));
+  color: #000;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 900;
+  padding: 6px 16px;
+  border-radius: 20px;
+  box-shadow: 0 0 20px rgba(234, 179, 8, 0.7);
+  z-index: 55;
+  letter-spacing: 0.5px;
+  animation: bannerPop 2s forwards ease;
+  pointer-events: none;
+}
+
+@keyframes bannerPop {
+  0% { transform: translate(-50%, -20px) scale(0.8); opacity: 0; }
+  15% { transform: translate(-50%, 0) scale(1.05); opacity: 1; }
+  25% { transform: translate(-50%, 0) scale(1); opacity: 1; }
+  80% { transform: translate(-50%, 0) scale(1); opacity: 1; }
+  100% { transform: translate(-50%, -20px) scale(0.8); opacity: 0; }
+}
+
+/* 5. Difficulty Selection Card on Start Screen */
+.difficulty-card {
+  width: 100%;
+  background: rgba(15, 23, 42, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+}
+
+.difficulty-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: #94a3b8;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.difficulty-selector {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.diff-btn {
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  padding: 8px 4px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  transition: all 0.15s ease;
+}
+
+.diff-btn:hover {
+  border-color: rgba(255, 255, 255, 0.3);
+  background: rgba(30, 41, 59, 0.9);
+}
+
+.diff-btn.active {
+  border-color: var(--accent-color);
+  background: rgba(15, 23, 42, 0.9);
+  box-shadow: 0 0 12px var(--accent-glow);
+}
+
+.diff-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+.diff-dot.normal { background: #00ffc2; box-shadow: 0 0 6px #00ffc2; }
+.diff-dot.medium { background: #facc15; box-shadow: 0 0 6px #facc15; }
+.diff-dot.hard { background: #ef4444; box-shadow: 0 0 6px #ef4444; }
+
+.diff-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.diff-name {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: 0.5px;
+}
+
+.diff-sub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 8px;
+  color: #94a3b8;
+  white-space: nowrap;
+}
+
+.arcade-pro-tip {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px;
+  color: #94a3b8;
+  text-align: center;
+  margin-top: 4px;
+  line-height: 1.4;
+}

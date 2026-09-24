@@ -109,7 +109,24 @@ const SoundEngine = (function() {
       setTimeout(() => playTone(1760, 'sine', 0.2, 0.25, 0.01), 120);
     },
 
-    // 6. Game Over Drop Sound
+    // 6. Recovery Chance / Revive Drone Sound (Cyber Chord)
+    revive: function() {
+      init();
+      if (muted || !ctx) return;
+      playTone(440, 'sine', 0.15, 0.3, 0.01);
+      setTimeout(() => playTone(554, 'sine', 0.15, 0.3, 0.01), 70);
+      setTimeout(() => playTone(659, 'sine', 0.25, 0.35, 0.01), 140);
+      setTimeout(() => playTone(880, 'triangle', 0.35, 0.4, 0.01), 220);
+    },
+
+    // 7. Pause Blip
+    pause: function() {
+      init();
+      playTone(520, 'sine', 0.08, 0.2, 0.01);
+      setTimeout(() => playTone(390, 'sine', 0.12, 0.15, 0.01), 50);
+    },
+
+    // 8. Game Over Drop Sound
     gameOver: function() {
       init();
       if (muted || !ctx) return;
@@ -128,7 +145,7 @@ const SoundEngine = (function() {
       } catch (e) {}
     },
 
-    // 7. UI Click
+    // 9. UI Click
     click: function() {
       init();
       playTone(600, 'sine', 0.04, 0.15, 0.01);

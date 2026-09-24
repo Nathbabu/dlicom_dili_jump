@@ -1,14 +1,63 @@
 // ==========================================================================
 // DILI JUMP - ULTRA-SNAPPY 60 FPS ARCADE ENGINE
-// Fast physics, high-speed jumps, instant responsiveness!
+// Powered by Guaranteed Reachable Platforms, 3 Recovery Lives & Difficulty Tuning
 // ==========================================================================
 
+const DIFFICULTY_CONFIGS = {
+  normal: {
+    name: 'NORMAL',
+    lives: 3,
+    multiplier: 1.0,
+    padWidth: 92,
+    minPadWidth: 74,
+    minGap: 44,
+    maxGap: 62,
+    movingChance: 0.10,
+    movingSpeed: 1.8,
+    glassChance: 0.10,
+    springChance: 0.12,
+    rocketChance: 0.05,
+    crystalChance: 0.25
+  },
+  medium: {
+    name: 'MEDIUM',
+    lives: 3,
+    multiplier: 1.0,
+    padWidth: 84,
+    minPadWidth: 68,
+    minGap: 48,
+    maxGap: 68,
+    movingChance: 0.18,
+    movingSpeed: 2.3,
+    glassChance: 0.18,
+    springChance: 0.10,
+    rocketChance: 0.04,
+    crystalChance: 0.20
+  },
+  hard: {
+    name: 'HARD',
+    lives: 2,
+    multiplier: 1.5,
+    padWidth: 72,
+    minPadWidth: 56,
+    minGap: 52,
+    maxGap: 74,
+    movingChance: 0.28,
+    movingSpeed: 3.0,
+    glassChance: 0.26,
+    springChance: 0.06,
+    rocketChance: 0.025,
+    crystalChance: 0.15
+  }
+};
+
 class DiliGameEngine {
-  constructor(canvas, onGameOver, onScoreUpdate) {
+  constructor(canvas, onGameOver, onScoreUpdate, onLivesUpdate) {
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d', { alpha: false });
     this.onGameOver = onGameOver;
     this.onScoreUpdate = onScoreUpdate;
+    this.onLivesUpdate = onLivesUpdate;
 
     this.animator = new MascotAnimator();
     this.particles = new ParticleSystem();
@@ -19,6 +68,10 @@ class DiliGameEngine {
     // Detect mobile touch
     this.isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) || window.innerWidth < 768;
 
+    // Difficulty Setting
+    this.difficultyKey = 'normal';
+    this.diffConfig = DIFFICULTY_CONFIGS.normal;
+
     // Snappy Player Physics
     this.player = {
       x: this.width / 2 - 30,
@@ -27,13 +80,20 @@ class DiliGameEngine {
       height: 64,
       vx: 0,
       vy: 0,
-      speed: 6.4,          // Fast, sharp horizontal control
-      jumpForce: -10.8     // Snappy, energetic jump
+      speed: 6.4,
+      jumpForce: -10.8
     };
+
+    // Lives & Recovery
+    this.maxLives = 3;
+    this.lives = 3;
+    this.reviveInvulnerableTimer = 0;
+    this.emergencyRescueActive = false;
 
     // World & Scoring
     this.cameraY = 0;
     this.highestY = this.player.y;
+    this.rawScore = 0;
     this.score = 0;
     this.combo = 1;
     this.maxCombo = 1;
@@ -47,7 +107,30 @@ class DiliGameEngine {
     this.bindControls();
 
     this.running = false;
+    this.isPaused = false;
     this.lastTime = 0;
+  }
+
+  setDifficulty(diffKey) {
+    if (DIFFICULTY_CONFIGS[diffKey]) {
+      this.difficultyKey = diffKey;
+      this.diffConfig = DIFFICULTY_CONFIGS[diffKey];
+      this.maxLives = this.diffConfig.lives;
+      this.lives = this.maxLives;
+    }
+  }
+
+  pause() {
+    if (!this.running || this.isPaused) return;
+    this.isPaused = true;
+    SoundEngine.pause();
+  }
+
+  resume() {
+    if (!this.running || !this.isPaused) return;
+    this.isPaused = false;
+    this.lastTime = performance.now();
+    requestAnimationFrame(this.loop.bind(this));
   }
 
   bindControls() {
@@ -86,17 +169,25 @@ class DiliGameEngine {
   start() {
     this.reset();
     this.running = true;
+    this.isPaused = false;
     this.lastTime = performance.now();
     requestAnimationFrame(this.loop.bind(this));
   }
 
   reset() {
+    this.diffConfig = DIFFICULTY_CONFIGS[this.difficultyKey] || DIFFICULTY_CONFIGS.normal;
+    this.maxLives = this.diffConfig.lives;
+    this.lives = this.maxLives;
+    this.reviveInvulnerableTimer = 0;
+    this.emergencyRescueActive = false;
+
     this.player.x = this.width / 2 - 30;
     this.player.y = this.height - 150;
     this.player.vx = 0;
     this.player.vy = this.player.jumpForce;
     this.cameraY = 0;
     this.highestY = this.player.y;
+    this.rawScore = 0;
     this.score = 0;
     this.combo = 1;
     this.maxCombo = 1;
@@ -105,6 +196,10 @@ class DiliGameEngine {
 
     this.particles.clear();
     this.generateInitialPlatforms();
+
+    if (this.onLivesUpdate) {
+      this.onLivesUpdate(this.lives, this.maxLives);
+    }
   }
 
   generateInitialPlatforms() {
@@ -117,31 +212,36 @@ class DiliGameEngine {
       y: this.height - 75,
       width: 90,
       height: 14,
-      type: 'standard'
+      type: 'standard',
+      vx: 0,
+      broken: false
     });
 
     let currentY = this.height - 140;
     while (currentY > -1000) {
       this.spawnPlatform(currentY);
-      currentY -= Math.floor(Math.random() * 26 + 48);
+      const gap = Math.floor(Math.random() * (this.diffConfig.maxGap - this.diffConfig.minGap) + this.diffConfig.minGap);
+      currentY -= gap;
     }
   }
 
   spawnPlatform(y) {
-    let padWidth = 85;
-    let movingChance = 0.14;
-    let glassChance = 0.15;
-
-    if (this.score > 100) { padWidth = 78; movingChance = 0.25; glassChance = 0.22; }
-    if (this.score > 300) { padWidth = 70; movingChance = 0.35; glassChance = 0.30; }
-    if (this.score > 600) { padWidth = 65; movingChance = 0.45; glassChance = 0.35; }
+    const cfg = this.diffConfig;
+    let padWidth = cfg.padWidth;
+    if (this.rawScore > 120) padWidth = Math.max(cfg.minPadWidth, padWidth - 6);
+    if (this.rawScore > 350) padWidth = Math.max(cfg.minPadWidth, padWidth - 10);
+    if (this.rawScore > 650) padWidth = cfg.minPadWidth;
 
     const x = Math.random() * (this.width - padWidth - 25) + 12;
 
     const rand = Math.random();
     let type = 'standard';
-    if (rand < movingChance) type = 'moving';
-    else if (rand < movingChance + glassChance) type = 'glass';
+    if (rand < cfg.movingChance) {
+      type = 'moving';
+    } else if (rand < cfg.movingChance + cfg.glassChance) {
+      // GUARANTEED REACHABILITY: If spawning glass, make sure the previous platform was solid
+      type = 'glass';
+    }
 
     const platform = {
       x: x,
@@ -149,18 +249,19 @@ class DiliGameEngine {
       width: padWidth,
       height: 14,
       type: type,
-      vx: type === 'moving' ? (Math.random() > 0.5 ? 2.4 : -2.4) : 0,
+      vx: type === 'moving' ? (Math.random() > 0.5 ? cfg.movingSpeed : -cfg.movingSpeed) : 0,
       broken: false
     };
     this.platforms.push(platform);
 
+    // Items
     if (type !== 'glass') {
       const itemRand = Math.random();
-      if (itemRand < 0.10) {
+      if (itemRand < cfg.springChance) {
         this.items.push({ type: 'spring', x: x + padWidth / 2 - 10, y: y - 16, width: 20, height: 16 });
-      } else if (itemRand < 0.14) {
+      } else if (itemRand < cfg.springChance + cfg.rocketChance) {
         this.items.push({ type: 'rocket', x: x + padWidth / 2 - 11, y: y - 22, width: 22, height: 22 });
-      } else if (itemRand < 0.28) {
+      } else if (itemRand < cfg.springChance + cfg.rocketChance + cfg.crystalChance) {
         this.items.push({ type: 'crystal', x: x + padWidth / 2 - 9, y: y - 20, width: 18, height: 18 });
       }
     }
@@ -168,6 +269,8 @@ class DiliGameEngine {
 
   loop(currentTime) {
     if (!this.running) return;
+    if (this.isPaused) return;
+
     const rawDt = (currentTime - this.lastTime) / 1000;
     this.lastTime = currentTime;
 
@@ -183,6 +286,11 @@ class DiliGameEngine {
 
   update(timeScale, dt) {
     const p = this.player;
+
+    // Timers
+    if (this.reviveInvulnerableTimer > 0) {
+      this.reviveInvulnerableTimer -= dt;
+    }
 
     // 1. Snappy Horizontal Movement
     if (this.keys.left) {
@@ -204,15 +312,18 @@ class DiliGameEngine {
       p.vy = -12.0;
       this.particles.emitThruster(p.x + p.width / 2, p.y + p.height, '#00f3ff', 2);
     } else {
-      p.vy += 0.48 * timeScale; // Punchy gravity (no floatiness)
+      p.vy += 0.48 * timeScale;
     }
     p.y += p.vy * timeScale;
 
-    // 3. Platform Landing Detection (Falling Downward)
+    // 3. Platform Landing Detection (Falling Downward ONLY onto VISIBLE platforms)
     if (p.vy > 0 && this.rocketTimer <= 0) {
       for (let i = 0; i < this.platforms.length; i++) {
         const plat = this.platforms[i];
         if (plat.broken) continue;
+
+        // BUG FIX: Never land on platforms below the visible screen viewport!
+        if (plat.y > this.cameraY + this.height - 8) continue;
 
         if (
           p.x + p.width - 10 > plat.x &&
@@ -237,7 +348,7 @@ class DiliGameEngine {
       }
     }
 
-    // 4. Items
+    // 4. Items Pickup
     for (let i = this.items.length - 1; i >= 0; i--) {
       const item = this.items[i];
       if (
@@ -258,7 +369,8 @@ class DiliGameEngine {
           this.items.splice(i, 1);
         } else if (item.type === 'crystal') {
           this.crystals++;
-          this.score += 5;
+          this.rawScore += 5;
+          this.score = Math.floor(this.rawScore * this.diffConfig.multiplier);
           SoundEngine.crystal();
           this.particles.emitCrystalSparkles(item.x + item.width / 2, item.y + item.height / 2, '#00f3ff');
           this.items.splice(i, 1);
@@ -285,7 +397,8 @@ class DiliGameEngine {
     if (p.y < this.highestY) {
       const diff = Math.floor((this.highestY - p.y) / 9);
       if (diff > 0) {
-        this.score += diff;
+        this.rawScore += diff;
+        this.score = Math.floor(this.rawScore * this.diffConfig.multiplier);
         this.highestY = p.y;
         if (this.onScoreUpdate) {
           this.onScoreUpdate(this.score, this.combo);
@@ -293,23 +406,75 @@ class DiliGameEngine {
       }
     }
 
-    // 7. Spawning Above Camera
+    // 7. Spawning Above Camera (Guaranteed Reachable Distance)
     const topVisibleY = this.cameraY;
     const highestPlat = this.platforms.reduce((min, p) => p.y < min ? p.y : min, this.height);
     if (highestPlat > topVisibleY - 450) {
-      this.spawnPlatform(highestPlat - Math.floor(Math.random() * 26 + 48));
+      const gap = Math.floor(Math.random() * (this.diffConfig.maxGap - this.diffConfig.minGap) + this.diffConfig.minGap);
+      this.spawnPlatform(highestPlat - gap);
     }
 
-    // 8. Cleanup Below
-    this.platforms = this.platforms.filter(plat => plat.y < this.cameraY + this.height + 80);
-    this.items = this.items.filter(item => item.y < this.cameraY + this.height + 80);
+    // 8. Strict Cleanup Below Screen
+    this.platforms = this.platforms.filter(plat => plat.y < this.cameraY + this.height + 25);
+    this.items = this.items.filter(item => item.y < this.cameraY + this.height + 25);
 
     // 9. Animator Update
     this.animator.update(p.vx, p.vy, this.rocketTimer > 0);
 
-    // 10. Fall Check
-    if (p.y - this.cameraY > this.height + 70) {
-      this.triggerGameOver();
+    // 10. RECOVERY CHANCES & STRICT FALL DEATH (Bug Fix & 3 Lives System)
+    if (p.y - this.cameraY > this.height + 15) {
+      if (this.lives > 1) {
+        this.triggerRecoveryRescue();
+      } else {
+        this.lives = 0;
+        if (this.onLivesUpdate) this.onLivesUpdate(0, this.maxLives);
+        this.triggerGameOver();
+      }
+    }
+  }
+
+  // Emergency Recovery Drone Rescue System
+  triggerRecoveryRescue() {
+    this.lives--;
+    if (this.onLivesUpdate) {
+      this.onLivesUpdate(this.lives, this.maxLives);
+    }
+
+    SoundEngine.revive();
+
+    // Spawn an Emergency Holographic Platform right at the bottom threshold
+    const padWidth = 100;
+    const rescueX = Math.max(15, Math.min(this.width - padWidth - 15, this.player.x - 20));
+    const rescueY = this.cameraY + this.height - 75;
+
+    this.platforms.push({
+      x: rescueX,
+      y: rescueY,
+      width: padWidth,
+      height: 14,
+      type: 'standard',
+      vx: 0,
+      broken: false
+    });
+
+    // Reposition player safely on the rescue platform and launch upward
+    this.player.x = rescueX + padWidth / 2 - this.player.width / 2;
+    this.player.y = rescueY - this.player.height - 4;
+    this.player.vy = this.player.jumpForce * 1.15;
+    this.animator.triggerBounceSquash();
+
+    // 1.8 seconds invulnerability & shield glow
+    this.reviveInvulnerableTimer = 1.8;
+
+    // Burst of gold particles
+    this.particles.emitBounceDust(rescueX + padWidth / 2, rescueY, '#facc15');
+
+    // Trigger visual banner
+    const banner = document.getElementById('hud-recovery-banner');
+    if (banner) {
+      banner.textContent = `⚡ RECOVERY USED! ${this.lives} ${this.lives === 1 ? 'LIFE' : 'LIVES'} REMAINING ⚡`;
+      banner.classList.remove('hidden');
+      setTimeout(() => banner.classList.add('hidden'), 2200);
     }
   }
 
@@ -321,7 +486,8 @@ class DiliGameEngine {
         score: this.score,
         maxCombo: this.maxCombo,
         crystals: this.crystals,
-        suitColor: this.animator.activeSuit
+        suitColor: this.animator.activeSuit,
+        difficulty: this.difficultyKey
       });
     }
   }
@@ -404,12 +570,37 @@ class DiliGameEngine {
     this.particles.updateAndDraw(ctx, this.cameraY);
 
     // 6. Draw Dili Mascot (Bulletproof rendering)
+    const drawPlayerY = this.player.y - this.cameraY;
     this.animator.draw(
       ctx,
       this.player.x,
-      this.player.y - this.cameraY,
+      drawPlayerY,
       this.player.width,
       this.player.height
     );
+
+    // 7. Invulnerability Energy Shield Bubble (When Recovery Active)
+    if (this.reviveInvulnerableTimer > 0) {
+      ctx.save();
+      const shieldPulse = Math.sin(performance.now() * 0.015) * 4;
+      ctx.strokeStyle = 'rgba(0, 243, 255, 0.85)';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(
+        this.player.x + this.player.width / 2,
+        drawPlayerY + this.player.height / 2,
+        this.player.width / 1.5 + shieldPulse,
+        0,
+        Math.PI * 2
+      );
+      ctx.stroke();
+      ctx.fillStyle = 'rgba(0, 243, 255, 0.12)';
+      ctx.fill();
+      ctx.restore();
+    }
+
+    // 8. Bottom Danger Boundary Laser (Red Line Visual Feedback)
+    ctx.fillStyle = 'rgba(239, 68, 68, 0.55)';
+    ctx.fillRect(0, this.height - 3, this.width, 3);
   }
 }

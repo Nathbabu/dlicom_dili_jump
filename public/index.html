@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>DILI JUMP // Dlicom Arcade</title>
+  <title>DILI JUMP // Official Dlicom Arcade</title>
   <link rel="icon" type="image/png" href="/assets/characters/dili-jump-cutout-mint.png">
 
   <!-- Fonts -->
@@ -23,14 +23,35 @@
 
     <!-- In-Game HUD -->
     <div id="game-hud" class="game-hud hidden">
-      <div class="hud-tag">
-        <div style="font-size:10px;color:#94a3b8;letter-spacing:1px;">SCORE</div>
-        <div id="hud-altitude-val" class="hud-altitude">0 PTS</div>
+      <!-- Left: Official Dlicom Logo + Score -->
+      <div class="hud-left-group">
+        <img src="/assets/dlicom-logo-transparent.png" alt="Dlicom" class="hud-dlicom-logo" title="Official Dlicom Mascot Arcade" />
+        <div class="hud-tag">
+          <div style="font-size:9px;color:#94a3b8;letter-spacing:1px;font-weight:700;">SCORE</div>
+          <div id="hud-altitude-val" class="hud-altitude">0 PTS</div>
+        </div>
       </div>
-      <div class="hud-tag" style="text-align:right;">
-        <div id="hud-score-val" style="font-size:14px;color:#fff;font-weight:700;">0</div>
-        <div id="hud-combo-val" class="hud-combo" style="display:none;">x1 COMBO</div>
+
+      <!-- Center: 3 Recovery Lives -->
+      <div id="hud-lives-container" class="hud-lives-box" title="Recovery Chances Remaining">
+        <span class="hud-heart active" id="heart-1">❤️</span>
+        <span class="hud-heart active" id="heart-2">❤️</span>
+        <span class="hud-heart active" id="heart-3">❤️</span>
       </div>
+
+      <!-- Right: Pause Button + Combo / Difficulty -->
+      <div class="hud-right-group">
+        <div class="hud-tag" style="text-align:right;">
+          <div id="hud-diff-badge" class="hud-diff-pill">NORMAL</div>
+          <div id="hud-combo-val" class="hud-combo" style="display:none;">x1 COMBO</div>
+        </div>
+        <button id="btn-hud-pause" class="btn-icon hud-pause-btn" title="Pause Game (P/Esc)">⏸️</button>
+      </div>
+    </div>
+
+    <!-- On-Screen Recovery Alert Banner -->
+    <div id="hud-recovery-banner" class="hud-recovery-banner hidden">
+      ⚡ RECOVERY DRONE DEPLOYED! ⚡
     </div>
 
     <!-- ===================================================================== -->
@@ -41,10 +62,11 @@
       <!-- Top Brand Header with Quick Action Buttons -->
       <div class="brand-header">
         <div style="display:flex;align-items:center;gap:10px;">
-          <img src="/assets/characters/dili-jump-cutout-mint.png" alt="Dili" style="width:38px;height:38px;object-fit:contain;filter:drop-shadow(0 0 10px rgba(0,255,194,0.6));" />
+          <img src="/assets/dlicom-logo-transparent.png" alt="Dlicom" class="brand-dlicom-logo" />
+          <img src="/assets/characters/dili-jump-cutout-mint.png" alt="Dili" class="brand-mascot-avatar" />
           <div>
             <div class="brand-title">DILI JUMP</div>
-            <div class="brand-badge">DLICOM ARCADE</div>
+            <div class="brand-badge">DLICOM CYBER ARCADE</div>
           </div>
         </div>
         <div style="display:flex;gap:8px;align-items:center;">
@@ -72,6 +94,34 @@
         </div>
       </div>
 
+      <!-- Difficulty Level Selector -->
+      <div class="difficulty-card">
+        <div class="difficulty-title">SELECT DIFFICULTY</div>
+        <div class="difficulty-selector">
+          <button class="diff-btn active" data-difficulty="normal">
+            <span class="diff-dot normal"></span>
+            <div class="diff-info">
+              <span class="diff-name">NORMAL</span>
+              <span class="diff-sub">3 Lives · Casual</span>
+            </div>
+          </button>
+          <button class="diff-btn" data-difficulty="medium">
+            <span class="diff-dot medium"></span>
+            <div class="diff-info">
+              <span class="diff-name">MEDIUM</span>
+              <span class="diff-sub">3 Lives · Arcade</span>
+            </div>
+          </button>
+          <button class="diff-btn" data-difficulty="hard">
+            <span class="diff-dot hard"></span>
+            <div class="diff-info">
+              <span class="diff-name">HARD</span>
+              <span class="diff-sub">2 Lives · 1.5x Pts</span>
+            </div>
+          </button>
+        </div>
+      </div>
+
       <!-- Pilot Input & Actions -->
       <div style="width:100%;display:flex;flex-direction:column;gap:10px;">
         <div class="custom-input-box">
@@ -92,23 +142,59 @@
           <span>🏆 GLOBAL LEADERBOARD</span>
         </button>
 
-        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#64748b;text-align:center;margin-top:4px;">
-          Controls: A/D or Arrow Keys to move · Tap Buttons on Mobile
+        <div class="arcade-pro-tip">
+          💡 Pro Tip: Wrap through left & right screen edges! · Press [P] to Pause
         </div>
       </div>
 
     </div>
 
     <!-- ===================================================================== -->
-    <!-- 2. GAME OVER OVERLAY (WITH HOME SCREEN & LEADERBOARD BUTTONS) -->
+    <!-- 2. PAUSE SCREEN OVERLAY -->
+    <!-- ===================================================================== -->
+    <div id="pause-screen" class="overlay-screen hidden" style="z-index:65;background:rgba(6,8,19,0.88);backdrop-filter:blur(10px);">
+      <div class="brand-header">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <img src="/assets/dlicom-logo-transparent.png" alt="Dlicom" class="brand-dlicom-logo" />
+          <div>
+            <div class="brand-title" style="color:var(--neon-cyan);">MISSION PAUSED</div>
+            <div class="brand-badge">DLICOM CYBER ARCADE</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="text-align:center;margin:20px 0;font-family:'JetBrains Mono',monospace;color:#94a3b8;font-size:12px;">
+        FLIGHT SYSTEMS ON STANDBY
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:12px;width:100%;">
+        <button id="btn-pause-resume" class="btn-primary">
+          <span>▶️ RESUME FLIGHT</span>
+        </button>
+        <button id="btn-pause-sound" class="btn-secondary">
+          <span>🔊 TOGGLE SOUND</span>
+        </button>
+        <button id="btn-pause-restart" class="btn-secondary">
+          <span>🔄 RESTART RUN</span>
+        </button>
+        <button id="btn-pause-home" class="btn-secondary" style="border-color:#ef4444;color:#ef4444;">
+          <span>🏠 QUIT TO MAIN MENU</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- 3. GAME OVER OVERLAY (WITH HOME SCREEN & LEADERBOARD BUTTONS) -->
     <!-- ===================================================================== -->
     <div id="game-over-screen" class="overlay-screen hidden">
       
       <div class="brand-header">
         <div style="display:flex;align-items:center;gap:10px;">
-          <img src="/assets/characters/dili-fall-cutout-mint.png" alt="Dili" style="width:34px;height:34px;object-fit:contain;filter:drop-shadow(0 0 8px rgba(239,68,68,0.5));" />
+          <img src="/assets/dlicom-logo-transparent.png" alt="Dlicom" class="brand-dlicom-logo" />
+          <img src="/assets/characters/dili-fall-cutout-mint.png" alt="Dili" class="brand-mascot-avatar" />
           <div>
             <div class="brand-title" style="color:#ef4444;">MISSION CONCLUDED</div>
+            <div class="brand-badge">DLICOM CYBER ARCADE</div>
           </div>
         </div>
         <div id="final-rank-badge" class="brand-badge" style="color:#facc15;border-color:#facc15;">GLOBAL RANK #--</div>
@@ -117,6 +203,7 @@
       <div style="background:rgba(15,23,42,0.6);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:16px;margin:14px 0;text-align:center;">
         <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#94a3b8;">FINAL SCORE</div>
         <div id="final-altitude-val" style="font-size:36px;font-weight:900;color:var(--accent-color);text-shadow:0 0 20px var(--accent-glow);">0 PTS</div>
+        <div id="final-diff-note" style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#facc15;margin-top:4px;">MODE: NORMAL</div>
 
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px;border-top:1px solid rgba(255,255,255,0.08);padding-top:12px;font-family:'JetBrains Mono',monospace;">
           <div>
@@ -156,12 +243,15 @@
     </div>
 
     <!-- ===================================================================== -->
-    <!-- 3. LEADERBOARD MODAL -->
+    <!-- 4. LEADERBOARD MODAL -->
     <!-- ===================================================================== -->
     <div id="leaderboard-modal" class="overlay-screen hidden" style="z-index:70;">
       
       <div class="brand-header">
-        <div class="brand-title">WALL OF FAME</div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <img src="/assets/dlicom-logo-transparent.png" alt="Dlicom" style="height:24px;width:auto;" />
+          <div class="brand-title">WALL OF FAME</div>
+        </div>
         <button id="btn-close-leaderboard" style="background:none;border:none;color:#fff;font-size:22px;cursor:pointer;padding:4px 8px;">✕</button>
       </div>
 

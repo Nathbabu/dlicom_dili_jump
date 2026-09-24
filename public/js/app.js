@@ -1,5 +1,5 @@
 // ==========================================================================
-// DILI JUMP - MASTER UI & LEADERBOARD CONTROLLER
+// DILI JUMP - MASTER UI, DIFFICULTY, RECOVERY & LEADERBOARD CONTROLLER
 // ==========================================================================
 
 (function() {
@@ -9,6 +9,7 @@
   // UI Screen Elements
   const startScreen = document.getElementById('start-screen');
   const gameOverScreen = document.getElementById('game-over-screen');
+  const pauseScreen = document.getElementById('pause-screen');
   const leaderboardModal = document.getElementById('leaderboard-modal');
   const hudElement = document.getElementById('game-hud');
 
@@ -25,9 +26,27 @@
   const btnCloseLeaderboardFoot = document.getElementById('btn-close-leaderboard-foot');
   const btnMute = document.getElementById('btn-toggle-audio');
 
+  // Pause Controls
+  const btnHudPause = document.getElementById('btn-hud-pause');
+  const btnPauseResume = document.getElementById('btn-pause-resume');
+  const btnPauseSound = document.getElementById('btn-pause-sound');
+  const btnPauseRestart = document.getElementById('btn-pause-restart');
+  const btnPauseHome = document.getElementById('btn-pause-home');
+
   // Mascot Preview & Color Chips
   const mascotAvatarImg = document.getElementById('mascot-avatar-preview');
   const colorChips = document.querySelectorAll('.color-chip');
+
+  // Difficulty Selector Chips
+  const diffBtns = document.querySelectorAll('.diff-btn');
+  let selectedDifficulty = localStorage.getItem('dili_jump_diff') || 'normal';
+
+  // HUD Lives Hearts
+  const heartElements = [
+    document.getElementById('heart-1'),
+    document.getElementById('heart-2'),
+    document.getElementById('heart-3')
+  ];
 
   let selectedSuit = 'mint';
   let pilotName = localStorage.getItem('dili_jump_pilot') || '';
@@ -61,9 +80,47 @@
   }
 
   // Initialize Game Instance
-  game = new DiliGameEngine(canvas, handleGameOver, handleScoreUpdate);
+  game = new DiliGameEngine(canvas, handleGameOver, handleScoreUpdate, handleLivesUpdate);
 
-  // 1. Color Customizer Chips (Guaranteed Image Sync)
+  // 1. Initialize Difficulty Selector
+  function applyDifficultySelection(diffKey) {
+    selectedDifficulty = diffKey;
+    localStorage.setItem('dili_jump_diff', selectedDifficulty);
+    diffBtns.forEach(b => {
+      if (b.dataset.difficulty === selectedDifficulty) {
+        b.classList.add('active');
+      } else {
+        b.classList.remove('active');
+      }
+    });
+    if (game) {
+      game.setDifficulty(selectedDifficulty);
+    }
+
+    const diffBadge = document.getElementById('hud-diff-badge');
+    if (diffBadge) {
+      if (selectedDifficulty === 'hard') {
+        diffBadge.textContent = 'HARD (1.5x)';
+        diffBadge.style.color = '#ef4444';
+      } else if (selectedDifficulty === 'medium') {
+        diffBadge.textContent = 'MEDIUM';
+        diffBadge.style.color = '#facc15';
+      } else {
+        diffBadge.textContent = 'NORMAL';
+        diffBadge.style.color = '#00ffc2';
+      }
+    }
+  }
+
+  diffBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      SoundEngine.click();
+      applyDifficultySelection(btn.dataset.difficulty || 'normal');
+    });
+  });
+  applyDifficultySelection(selectedDifficulty);
+
+  // 2. Color Customizer Chips
   colorChips.forEach(chip => {
     chip.addEventListener('click', () => {
       SoundEngine.click();
@@ -83,7 +140,7 @@
     });
   });
 
-  // 2. Launch Game Button
+  // 3. Launch Game Button
   btnLaunch.addEventListener('click', () => {
     SoundEngine.click();
     const entered = pilotInput.value.trim() || 'Dili_' + Math.floor(Math.random() * 8999 + 1000);
@@ -92,35 +149,107 @@
 
     startScreen.classList.add('hidden');
     gameOverScreen.classList.add('hidden');
+    pauseScreen.classList.add('hidden');
     hudElement.classList.remove('hidden');
 
     game.animator.setSuit(selectedSuit);
+    game.setDifficulty(selectedDifficulty);
     game.start();
   });
 
-  // 3. Play Again Button
+  // 4. Play Again Button
   btnPlayAgain.addEventListener('click', () => {
     SoundEngine.click();
     gameOverScreen.classList.add('hidden');
+    pauseScreen.classList.add('hidden');
     hudElement.classList.remove('hidden');
+    game.setDifficulty(selectedDifficulty);
     game.start();
   });
 
-  // 4. Return to Main Menu Button
+  // 5. Return to Main Menu Button
   if (btnReturnHome) {
     btnReturnHome.addEventListener('click', () => {
       SoundEngine.click();
       gameOverScreen.classList.add('hidden');
+      pauseScreen.classList.add('hidden');
       hudElement.classList.add('hidden');
       startScreen.classList.remove('hidden');
     });
   }
 
-  // 5. In-Game HUD Real-time Score Updates
+  // 6. Pause System
+  function togglePause() {
+    if (!game || !game.running) return;
+    if (game.isPaused) {
+      game.resume();
+      pauseScreen.classList.add('hidden');
+    } else {
+      game.pause();
+      pauseScreen.classList.remove('hidden');
+    }
+  }
+
+  if (btnHudPause) btnHudPause.addEventListener('click', togglePause);
+  if (btnPauseResume) btnPauseResume.addEventListener('click', togglePause);
+
+  if (btnPauseSound) {
+    btnPauseSound.addEventListener('click', () => {
+      const isMuted = SoundEngine.toggleMute();
+      btnPauseSound.textContent = isMuted ? '🔇 SOUND: OFF' : '🔊 SOUND: ON';
+      if (btnMute) btnMute.textContent = isMuted ? '🔇' : '🔊';
+    });
+  }
+
+  if (btnPauseRestart) {
+    btnPauseRestart.addEventListener('click', () => {
+      SoundEngine.click();
+      pauseScreen.classList.add('hidden');
+      game.start();
+    });
+  }
+
+  if (btnPauseHome) {
+    btnPauseHome.addEventListener('click', () => {
+      SoundEngine.click();
+      game.running = false;
+      game.isPaused = false;
+      pauseScreen.classList.add('hidden');
+      hudElement.classList.add('hidden');
+      startScreen.classList.remove('hidden');
+    });
+  }
+
+  window.addEventListener('keydown', (e) => {
+    if (e.code === 'KeyP' || e.code === 'Escape') {
+      if (game && game.running) {
+        togglePause();
+      }
+    }
+  });
+
+  // 7. Update HUD Lives Display
+  function handleLivesUpdate(remaining, max) {
+    heartElements.forEach((heart, idx) => {
+      if (!heart) return;
+      if (idx < max) {
+        heart.style.display = 'inline-block';
+        if (idx < remaining) {
+          heart.classList.add('active');
+          heart.classList.remove('lost');
+        } else {
+          heart.classList.remove('active');
+          heart.classList.add('lost');
+        }
+      } else {
+        heart.style.display = 'none';
+      }
+    });
+  }
+
+  // 8. In-Game HUD Real-time Score Updates
   function handleScoreUpdate(score, combo) {
-    const hudScore = document.getElementById('hud-score-val');
     const hudAlt = document.getElementById('hud-altitude-val');
-    if (hudScore) hudScore.textContent = score;
     if (hudAlt) hudAlt.textContent = score + ' PTS';
 
     const comboEl = document.getElementById('hud-combo-val');
@@ -134,20 +263,23 @@
     }
   }
 
-  // 6. Game Over Handler (Upstash Redis Persistent Sync)
+  // 9. Game Over Handler (Upstash Redis Persistent Sync)
   async function handleGameOver(stats) {
     hudElement.classList.add('hidden');
+    pauseScreen.classList.add('hidden');
     gameOverScreen.classList.remove('hidden');
 
     const finalAlt = document.getElementById('final-altitude-val');
     const finalScr = document.getElementById('final-score-val');
     const finalCmb = document.getElementById('final-combo-val');
     const finalCrys = document.getElementById('final-crystals-val');
+    const finalDiff = document.getElementById('final-diff-note');
 
     if (finalAlt) finalAlt.textContent = stats.score + ' PTS';
     if (finalScr) finalScr.textContent = stats.score;
     if (finalCmb) finalCmb.textContent = 'x' + stats.maxCombo;
     if (finalCrys) finalCrys.textContent = stats.crystals;
+    if (finalDiff) finalDiff.textContent = `DIFFICULTY: ${(stats.difficulty || 'normal').toUpperCase()}${stats.difficulty === 'hard' ? ' (1.5x BONUS)' : ''}`;
 
     // Submit to Upstash Redis Leaderboard (Globally synced 24/7)
     try {
@@ -160,7 +292,8 @@
           altitude: stats.score,
           suitColor: stats.suitColor,
           maxCombo: stats.maxCombo,
-          crystals: stats.crystals
+          crystals: stats.crystals,
+          difficulty: stats.difficulty || 'normal'
         })
       });
       if (res.ok) {
@@ -175,16 +308,16 @@
     }
   }
 
-  // 7. Share on X / Twitter
+  // 10. Share on X / Twitter
   btnShareX.addEventListener('click', () => {
     SoundEngine.click();
     const finalScore = document.getElementById('final-altitude-val')?.textContent || '0 PTS';
-    const tweetText = `Scored ${finalScore} in DILI JUMP with @DlicomApp! 🚀🐰\n\nPilot: ${pilotName}\n\nCan you beat my score on the global leaderboard?\n\n#Dlicom #DiliJump #Web3Gaming`;
+    const tweetText = `Scored ${finalScore} on ${selectedDifficulty.toUpperCase()} mode in DILI JUMP with @DlicomApp! 🚀🐰\n\nPilot: ${pilotName}\n\nCan you beat my score on the global leaderboard?\n\n#Dlicom #DiliJump #Web3Gaming`;
     const intentUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}&url=${encodeURIComponent('https://dilijumpdlicom.vercel.app')}`;
     window.open(intentUrl, '_blank');
   });
 
-  // 8. Open Leaderboard (From all 3 entrypoints)
+  // 11. Open Leaderboard
   const openLeaderboard = () => {
     SoundEngine.click();
     leaderboardModal.classList.remove('hidden');
@@ -235,7 +368,7 @@
     }
   }
 
-  // 9. Audio Toggle
+  // 12. Audio Toggle
   btnMute.addEventListener('click', () => {
     const isMuted = SoundEngine.toggleMute();
     btnMute.textContent = isMuted ? '🔇' : '🔊';
