@@ -145,6 +145,24 @@ const SoundEngine = (function() {
       } catch (e) {}
     },
 
+        // 10. New Personal Record Victory Fanfare
+    victory: function() {
+      init();
+      if (muted || !ctx) return;
+      playTone(523.25, 'sine', 0.12, 0.3, 0.01);
+      setTimeout(() => playTone(659.25, 'sine', 0.12, 0.35, 0.01), 100);
+      setTimeout(() => playTone(783.99, 'sine', 0.15, 0.4, 0.01), 200);
+      setTimeout(() => playTone(1046.50, 'triangle', 0.5, 0.45, 0.01), 320);
+    },
+
+    // 11. In-game Record Break Sparkle
+    recordChime: function() {
+      init();
+      if (muted || !ctx) return;
+      playTone(784, 'sine', 0.1, 0.25, 0.01);
+      setTimeout(() => playTone(1174, 'sine', 0.25, 0.3, 0.01), 80);
+    },
+
     // 9. UI Click
     click: function() {
       init();

@@ -51,6 +51,7 @@
 
     <!-- On-Screen Recovery Alert Banner -->
     <div id="hud-recovery-banner" class="hud-recovery-banner"></div>
+    <div id="hud-record-banner" class="hud-record-banner"></div>
 
     <!-- ===================================================================== -->
     <!-- 1. START MENU OVERLAY -->
@@ -184,6 +185,8 @@
         <!-- ===================================================================== -->
     <!-- 3. GAME OVER OVERLAY (CLEAN ALIGNMENT & SPACIOUS BALANCED CYBER UI) -->
     <!-- ===================================================================== -->
+    <canvas id="confetti-canvas" width="460" height="700" class="confetti-canvas pointer-none hidden"></canvas>
+
     <div id="game-over-screen" class="overlay-screen game-over-container hidden">
       
       <!-- Top Brand Header: Balanced 2-Row Alignment -->
@@ -213,6 +216,11 @@
 
       <!-- Telemetry Results Card -->
       <div class="game-over-telemetry-box">
+        <div id="game-over-record-banner" class="game-over-record-banner hidden">
+          <span class="record-badge-icon">👑</span>
+          <span class="record-badge-text">NEW PERSONAL RECORD!</span>
+        </div>
+
         <div class="telemetry-main-score">
           <div class="telemetry-score-lbl">FINAL FLIGHT SCORE</div>
           <div id="final-altitude-val" class="telemetry-huge-val">0 PTS</div>

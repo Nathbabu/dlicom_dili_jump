@@ -80,7 +80,7 @@
   }
 
   // Initialize Game Instance
-  game = new DiliGameEngine(canvas, handleGameOver, handleScoreUpdate, handleLivesUpdate);
+  game = new DiliGameEngine(canvas, handleGameOver, handleScoreUpdate, handleLivesUpdate, handleRecordBreak);
 
   // 1. Initialize Difficulty Selector
   function applyDifficultySelection(diffKey) {
@@ -152,7 +152,8 @@
     pauseScreen.classList.add('hidden');
     hudElement.classList.remove('hidden');
 
-    game.animator.setSuit(selectedSuit);
+        game.animator.setSuit(selectedSuit);
+    game.setTargetRecord(getPersonalRecord(selectedDifficulty));
     game.setDifficulty(selectedDifficulty);
     game.start();
   });
@@ -163,6 +164,7 @@
     gameOverScreen.classList.add('hidden');
     pauseScreen.classList.add('hidden');
     hudElement.classList.remove('hidden');
+    game.setTargetRecord(getPersonalRecord(selectedDifficulty));
     game.setDifficulty(selectedDifficulty);
     game.start();
   });
@@ -227,6 +229,102 @@
       }
     }
   });
+
+    // 7b. Personal Record Tracking & Celebration System
+  function getPersonalRecord(diff) {
+    const d = (diff || selectedDifficulty || 'normal').toLowerCase();
+    const p = (pilotName || localStorage.getItem('dili_jump_pilot') || '').toLowerCase().trim();
+    let rec = 0;
+    if (p) {
+      rec = parseInt(localStorage.getItem(`dili_pb_${p}_${d}`) || '0', 10);
+    }
+    if (!rec) {
+      rec = parseInt(localStorage.getItem(`dili_pb_${d}`) || '0', 10);
+    }
+    return rec;
+  }
+
+  function setPersonalRecord(diff, score) {
+    const d = (diff || selectedDifficulty || 'normal').toLowerCase();
+    const p = (pilotName || localStorage.getItem('dili_jump_pilot') || '').toLowerCase().trim();
+    if (p) {
+      localStorage.setItem(`dili_pb_${p}_${d}`, score);
+    }
+    localStorage.setItem(`dili_pb_${d}`, score);
+  }
+
+  // Live In-Game Record Break Notification
+  function handleRecordBreak(score) {
+    SoundEngine.recordChime();
+    const banner = document.getElementById('hud-record-banner');
+    if (banner) {
+      banner.textContent = `👑 NEW RECORD: ${score} PTS! 👑`;
+      banner.classList.add('show');
+      setTimeout(() => {
+        banner.classList.remove('show');
+      }, 2400);
+    }
+  }
+
+  // Particle Confetti Cannon for New Record
+  function launchCelebrationConfetti() {
+    const canvas = document.getElementById('confetti-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    canvas.classList.remove('hidden');
+
+    const particles = [];
+    const colors = ['#facc15', '#00ffc2', '#00f3ff', '#ec49c0', '#a855f7', '#ffffff'];
+
+    for (let i = 0; i < 85; i++) {
+      particles.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * -canvas.height * 0.4,
+        w: Math.random() * 8 + 4,
+        h: Math.random() * 5 + 3,
+        vx: (Math.random() - 0.5) * 5,
+        vy: Math.random() * 3.2 + 2.4,
+        rotation: Math.random() * 360,
+        rotSpeed: (Math.random() - 0.5) * 8,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        wobble: Math.random() * 20,
+        wobbleSpeed: Math.random() * 0.1 + 0.05
+      });
+    }
+
+    let startTime = performance.now();
+    const duration = 3800;
+
+    function frame(now) {
+      const elapsed = now - startTime;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const fade = elapsed > duration - 1000 ? Math.max(0, (duration - elapsed) / 1000) : 1;
+      ctx.globalAlpha = fade;
+
+      for (const p of particles) {
+        p.y += p.vy;
+        p.x += p.vx + Math.sin(p.wobble) * 1.2;
+        p.wobble += p.wobbleSpeed;
+        p.rotation += p.rotSpeed;
+
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate((p.rotation * Math.PI) / 180);
+        ctx.fillStyle = p.color;
+        ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+        ctx.restore();
+      }
+
+      if (elapsed < duration) {
+        requestAnimationFrame(frame);
+      } else {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        canvas.classList.add('hidden');
+      }
+    }
+    requestAnimationFrame(frame);
+  }
 
   // 7. Update HUD Lives Display
   function handleLivesUpdate(remaining, max) {

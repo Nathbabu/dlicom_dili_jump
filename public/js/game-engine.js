@@ -55,12 +55,15 @@ const DIFFICULTY_CONFIGS = {
 };
 
 class DiliGameEngine {
-  constructor(canvas, onGameOver, onScoreUpdate, onLivesUpdate) {
+  constructor(canvas, onGameOver, onScoreUpdate, onLivesUpdate, onRecordBreak) {
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d', { alpha: false });
     this.onGameOver = onGameOver;
     this.onScoreUpdate = onScoreUpdate;
     this.onLivesUpdate = onLivesUpdate;
+    this.onRecordBreak = onRecordBreak;
+    this.targetRecord = 0;
+    this.recordBrokenAlertShown = false;
 
     this.animator = new MascotAnimator();
     this.particles = new ParticleSystem();
@@ -112,6 +115,11 @@ class DiliGameEngine {
     this.running = false;
     this.isPaused = false;
     this.lastTime = 0;
+  }
+
+  setTargetRecord(record) {
+    this.targetRecord = record || 0;
+    this.recordBrokenAlertShown = false;
   }
 
   setDifficulty(diffKey) {
@@ -441,6 +449,14 @@ class DiliGameEngine {
         this.highestY = p.y;
         if (this.onScoreUpdate) {
           this.onScoreUpdate(this.score, this.combo);
+        }
+
+        // Live In-Game Record Break Alert!
+        if (!this.recordBrokenAlertShown && this.targetRecord > 50 && this.score > this.targetRecord) {
+          this.recordBrokenAlertShown = true;
+          if (this.onRecordBreak) {
+            this.onRecordBreak(this.score);
+          }
         }
       }
     }
