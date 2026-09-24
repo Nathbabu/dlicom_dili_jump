@@ -350,6 +350,62 @@
   if (btnCloseLeaderboard) btnCloseLeaderboard.addEventListener('click', closeLeaderboard);
   if (btnCloseLeaderboardFoot) btnCloseLeaderboardFoot.addEventListener('click', closeLeaderboard);
 
+    // Leaderboard Filtering State & Filter Buttons
+  let cachedLeaderboardRows = [];
+  let currentLeaderboardFilter = 'all';
+
+  const filterTabs = document.querySelectorAll('.lb-filter-btn');
+  filterTabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      SoundEngine.click();
+      filterTabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      currentLeaderboardFilter = tab.dataset.filter || 'all';
+      renderFilteredLeaderboard();
+    });
+  });
+
+  function renderFilteredLeaderboard() {
+    const listBody = document.getElementById('leaderboard-rows');
+    if (!listBody) return;
+
+    let filtered = cachedLeaderboardRows;
+    if (currentLeaderboardFilter !== 'all') {
+      filtered = cachedLeaderboardRows.filter(entry => {
+        const diff = (entry.difficulty || 'normal').toLowerCase();
+        return diff === currentLeaderboardFilter;
+      });
+    }
+
+    if (filtered.length === 0) {
+      const modeLabel = currentLeaderboardFilter === 'all' ? 'flights' : `${currentLeaderboardFilter.toUpperCase()} flights`;
+      listBody.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:24px;color:#64748b;">No ${modeLabel} recorded yet. Be the first!</td></tr>`;
+      return;
+    }
+
+    listBody.innerHTML = filtered.map((entry, idx) => {
+      const rankClass = idx === 0 ? 'rank-1' : (idx === 1 ? 'rank-2' : (idx === 2 ? 'rank-3' : ''));
+      const medal = idx === 0 ? '🥇 ' : (idx === 1 ? '🥈 ' : (idx === 2 ? '🥉 ' : ''));
+      const diffKey = (entry.difficulty || 'normal').toLowerCase();
+      const diffClass = diffKey === 'hard' ? 'diff-hard' : (diffKey === 'medium' ? 'diff-medium' : 'diff-normal');
+      const diffLabel = diffKey.toUpperCase();
+
+      return `
+        <tr>
+          <td class="${rankClass}">${medal}#${idx + 1}</td>
+          <td>
+            <div class="pilot-cell">
+              <span class="pilot-name-text">${escapeHtml(entry.pilot)}</span>
+              <span class="pilot-diff-pill ${diffClass}">${diffLabel}</span>
+            </div>
+          </td>
+          <td style="color:var(--neon-cyan);font-weight:800;">${(entry.score || 0).toLocaleString()} PTS</td>
+          <td style="color:#94a3b8;font-size:11px;">${entry.crystals || 0} 💎</td>
+        </tr>
+      `;
+    }).join('');
+  }
+
   async function fetchAndRenderLeaderboard() {
     const listBody = document.getElementById('leaderboard-rows');
     if (!listBody) return;
@@ -358,25 +414,8 @@
     try {
       const res = await fetch('/api/leaderboard');
       const data = await res.json();
-      const rows = data.leaderboard || [];
-
-      if (rows.length === 0) {
-        listBody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;color:#64748b;">No flights recorded yet. Be the first!</td></tr>';
-        return;
-      }
-
-      listBody.innerHTML = rows.map((entry, idx) => {
-        const rankClass = idx === 0 ? 'rank-1' : (idx === 1 ? 'rank-2' : (idx === 2 ? 'rank-3' : ''));
-        const medal = idx === 0 ? '👑 ' : (idx === 1 ? '🥈 ' : (idx === 2 ? '🥉 ' : ''));
-        return `
-          <tr>
-            <td class="${rankClass}">${medal}#${idx + 1}</td>
-            <td style="font-weight:700;color:#fff;">${escapeHtml(entry.pilot)}</td>
-            <td style="color:var(--neon-cyan);font-weight:800;">${(entry.score || 0).toLocaleString()} PTS</td>
-            <td style="color:#94a3b8;font-size:11px;">${entry.crystals || 0} 💎</td>
-          </tr>
-        `;
-      }).join('');
+      cachedLeaderboardRows = data.leaderboard || [];
+      renderFilteredLeaderboard();
     } catch (e) {
       listBody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;color:#ef4444;">Failed to load leaderboard.</td></tr>';
     }

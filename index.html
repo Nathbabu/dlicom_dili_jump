@@ -290,12 +290,20 @@
         <button id="btn-close-leaderboard" style="background:none;border:none;color:#fff;font-size:22px;cursor:pointer;padding:4px 8px;">✕</button>
       </div>
 
+      <!-- Difficulty Level Filter Tabs -->
+      <div class="leaderboard-filter-tabs">
+        <button class="lb-filter-btn active" data-filter="all">ALL</button>
+        <button class="lb-filter-btn" data-filter="normal">NORMAL</button>
+        <button class="lb-filter-btn" data-filter="medium">MEDIUM</button>
+        <button class="lb-filter-btn" data-filter="hard">HARD</button>
+      </div>
+
       <div style="flex:1;overflow-y:auto;margin:15px 0;border:1px solid rgba(255,255,255,0.08);border-radius:8px;background:rgba(10,12,18,0.7);-webkit-overflow-scrolling:touch;">
         <table class="leaderboard-table">
           <thead>
             <tr>
               <th>Rank</th>
-              <th>Dili</th>
+              <th>Pilot &amp; Mode</th>
               <th>Score</th>
               <th>Crystals</th>
             </tr>

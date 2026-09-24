@@ -10,12 +10,16 @@ module.exports = async (req, res) => {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
-    const { pilot, score, altitude, suitColor, maxCombo, crystals } = req.body || {};
+    const { pilot, score, altitude, suitColor, maxCombo, crystals, difficulty } = req.body || {};
     if (!pilot || typeof score !== 'number' || score <= 0) {
       return res.status(400).json({ success: false, error: 'Invalid score submission' });
     }
 
     const cleanPilot = String(pilot || ('Dili_' + Math.floor(Math.random() * 8999 + 1000))).trim().slice(0, 25);
+    const cleanDiff = (difficulty && ['normal', 'medium', 'hard'].includes(String(difficulty).toLowerCase()))
+      ? String(difficulty).toLowerCase()
+      : 'normal';
+
     const entry = {
       pilot: cleanPilot,
       score: Math.floor(score),
@@ -23,6 +27,7 @@ module.exports = async (req, res) => {
       suitColor: suitColor || 'mint',
       maxCombo: maxCombo || 1,
       crystals: crystals || 0,
+      difficulty: cleanDiff,
       timestamp: new Date().toISOString()
     };
 
