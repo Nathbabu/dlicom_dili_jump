@@ -17,7 +17,8 @@ const DIFFICULTY_CONFIGS = {
     glassChance: 0.08,
     springChance: 0.12,
     rocketChance: 0.04,
-    crystalChance: 0.24
+    crystalChance: 0.24,
+    gravity: 0.46
   },
   medium: {
     name: 'MEDIUM',
@@ -32,22 +33,24 @@ const DIFFICULTY_CONFIGS = {
     glassChance: 0.10,
     springChance: 0.10,
     rocketChance: 0.035,
-    crystalChance: 0.20
+    crystalChance: 0.20,
+    gravity: 0.46
   },
   hard: {
     name: 'HARD',
     lives: 1,
     multiplier: 1.5,
-    padWidth: 70,
-    minPadWidth: 54,
-    minGap: 54,
-    maxGap: 74,
-    movingChance: 0.28,
-    movingSpeed: 2.8,
+    padWidth: 65,
+    minPadWidth: 48,
+    minGap: 52,
+    maxGap: 70,
+    movingChance: 0.44,
+    movingSpeed: 3.6,
     glassChance: 0.16,
     springChance: 0.07,
     rocketChance: 0.02,
-    crystalChance: 0.15
+    crystalChance: 0.16,
+    gravity: 0.49
   }
 };
 
@@ -225,21 +228,30 @@ class DiliGameEngine {
     }
   }
 
-      spawnPlatform(y) {
+        spawnPlatform(y) {
     const cfg = this.diffConfig;
     let padWidth = cfg.padWidth;
-    if (this.rawScore > 150) padWidth = Math.max(cfg.minPadWidth, padWidth - 6);
-    if (this.rawScore > 400) padWidth = Math.max(cfg.minPadWidth, padWidth - 10);
+    let movingSpeed = cfg.movingSpeed;
+    let movingChance = cfg.movingChance;
 
-    // GUARANTEED REACHABILITY WITH MANDATORY STEERING:
-    // Every platform is between 40px (min) and 140px (max) horizontally from the last one.
-    // At speed 6.4, 140px takes only 21 frames to reach - perfectly comfortable on mobile touch!
+    // Hardcore Dynamic Escalation: Platforms get narrower and faster as score climbs!
+    if (this.difficultyKey === 'hard') {
+      if (this.rawScore > 200) { padWidth = Math.max(cfg.minPadWidth, padWidth - 4); movingSpeed += 0.3; movingChance += 0.04; }
+      if (this.rawScore > 500) { padWidth = Math.max(cfg.minPadWidth, padWidth - 7); movingSpeed += 0.5; movingChance += 0.06; }
+      if (this.rawScore > 900) { padWidth = Math.max(cfg.minPadWidth, padWidth - 10); movingSpeed += 0.7; movingChance += 0.08; }
+    } else {
+      if (this.rawScore > 150) padWidth = Math.max(cfg.minPadWidth, padWidth - 6);
+      if (this.rawScore > 400) padWidth = Math.max(cfg.minPadWidth, padWidth - 10);
+    }
+
+    // GUARANTEED REACHABILITY (40px min to 135px max step)
+    // Ensures platforms are ALWAYS 100% reachable within 21 frames of steering!
     const lastPlat = this.platforms.length > 0 ? this.platforms[this.platforms.length - 1] : null;
     let x;
 
     if (lastPlat) {
       const minStep = 40;
-      const maxStep = 140;
+      const maxStep = 135;
       const canGoLeft = (lastPlat.x - minStep) >= 16;
       const canGoRight = (lastPlat.x + minStep + padWidth) <= (this.width - 16);
 
@@ -262,11 +274,11 @@ class DiliGameEngine {
 
     const rand = Math.random();
     let type = 'standard';
-    // Prevent consecutive glass platforms so player is never stranded in an impossible trap
+    // Prevent consecutive glass traps
     const lastWasGlass = lastPlat && lastPlat.type === 'glass';
-    if (!lastWasGlass && rand < cfg.movingChance) {
+    if (!lastWasGlass && rand < movingChance) {
       type = 'moving';
-    } else if (!lastWasGlass && rand < cfg.movingChance + cfg.glassChance) {
+    } else if (!lastWasGlass && rand < movingChance + cfg.glassChance) {
       type = 'glass';
     }
 
@@ -276,7 +288,7 @@ class DiliGameEngine {
       width: padWidth,
       height: 14,
       type: type,
-      vx: type === 'moving' ? (Math.random() > 0.5 ? cfg.movingSpeed : -cfg.movingSpeed) : 0,
+      vx: type === 'moving' ? (Math.random() > 0.5 ? movingSpeed : -movingSpeed) : 0,
       broken: false
     };
     this.platforms.push(platform);
@@ -339,7 +351,7 @@ class DiliGameEngine {
       p.vy = -12.0;
       this.particles.emitThruster(p.x + p.width / 2, p.y + p.height, '#00f3ff', 2);
     } else {
-      p.vy += 0.46 * timeScale; // Generous airtime
+      p.vy += (this.diffConfig.gravity || 0.46) * timeScale; // Mode-specific snappy gravity
     }
     p.y += p.vy * timeScale;
 
