@@ -548,6 +548,7 @@ body {
 
 /* 4. On-Screen Recovery Banner Alert */
 .hud-recovery-banner {
+  display: none;
   position: absolute;
   top: 75px;
   left: 50%;
@@ -562,8 +563,12 @@ body {
   box-shadow: 0 0 20px rgba(234, 179, 8, 0.7);
   z-index: 55;
   letter-spacing: 0.5px;
-  animation: bannerPop 2s forwards ease;
   pointer-events: none;
+}
+
+.hud-recovery-banner.show {
+  display: block;
+  animation: bannerPop 2.2s forwards ease;
 }
 
 @keyframes bannerPop {

@@ -473,8 +473,9 @@ class DiliGameEngine {
     const banner = document.getElementById('hud-recovery-banner');
     if (banner) {
       banner.textContent = `⚡ RECOVERY USED! ${this.lives} ${this.lives === 1 ? 'LIFE' : 'LIVES'} REMAINING ⚡`;
-      banner.classList.remove('hidden');
-      setTimeout(() => banner.classList.add('hidden'), 2200);
+      banner.classList.add('show');
+      if (this._bannerTimeout) clearTimeout(this._bannerTimeout);
+      this._bannerTimeout = setTimeout(() => banner.classList.remove('show'), 2200);
     }
   }
 
